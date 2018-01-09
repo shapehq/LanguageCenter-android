@@ -18,7 +18,7 @@ import static android.content.Context.MODE_PRIVATE;
 /**
  * Created by andersp on 28/09/16.
  *
- * Sharedprefs based DB for Translations & Languages.
+ * Sharedprefs based DB for Translations and Languages.
  *
  */
 
@@ -62,7 +62,7 @@ public class LCTranslationsDB {
     }
 
     /**
-     * get a single translation & post a new string for creation to the language center api if missing.
+     * get a single translation and post a new string for creation to the language center api if missing.
      *
      * @param key       translation key for language center api
      * @param orgText   fallback text
@@ -73,7 +73,7 @@ public class LCTranslationsDB {
     }
 
     /**
-     * get a single translation & post a new string for creation to the language center api if missing.
+     * get a single translation and post a new string for creation to the language center api if missing.
      *
      * @param key       translation key for language center api
      * @param orgText   fallback text

@@ -15,11 +15,11 @@ import timber.log.Timber;
  *
  *     LanguageCenter.with(Context context);
  *
- *     & these string resources needed by the framework to function:
+ *     These string resources needed by the framework to function:
  *
- *     <string name="language_center_user_name">vigo</string>
- *     <string name="language_center_password">5Xvz66JsKH</string>
- *     <string name="language_center_base_url">https://language.novasa.com/vigo/api/v1/</string>
+ *     language_center_user_name
+ *     language_center_password
+ *     language_center_base_url
  *
  * Or:
  *

@@ -1,5 +1,29 @@
 apply plugin: 'com.android.library'
 
+ext {
+    bintrayRepo = 'languagecenter'
+    bintrayName = 'languagecenter'
+
+    publishedGroupId = 'com.novasa.languagecenter'
+    libraryName = 'languagecenter'
+    artifact = 'languagecenter'
+
+    libraryDescription = 'LanguageCenter is a translation tool from Novasa A/S'
+
+    siteUrl = 'https://github.com/Novasa/LanguageCenter-android'
+    gitUrl = 'https://github.com/Novasa/LanguageCenter-android.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'martinwagner-novasa'
+    developerName = 'Martin Wagner'
+    developerEmail = 'martin@novasa.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -7,8 +31,6 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -37,10 +59,19 @@ allprojects {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
+
     //Logging
     implementation 'com.jakewharton.timber:timber:4.5.1'
+
     // Squareup
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'com.squareup.okhttp3:okhttp:3.8.0'
+
 }
+
+//Add these lines to publish library to bintray
+//Place it at the end of the file
+
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

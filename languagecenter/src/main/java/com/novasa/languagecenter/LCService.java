@@ -176,7 +176,7 @@ public class LCService {
 
                 listOfTranslationToPersist.addAll(list);
 
-                // if there are any new or updated translations we persist them & the timestamp
+                // if there are any new or updated translations we persist them and the timestamp
                 if (listOfTranslationToPersist.size() > 0) {
 
                     LanguageCenter.getInstance().getTranslationDB().persistTranslationsList(listOfTranslationToPersist, callback);
