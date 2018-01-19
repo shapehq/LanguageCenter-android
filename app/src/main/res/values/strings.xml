@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">LanguageCenterExample</string>
+    <string name="title_activity_main">MainActivity</string>
+
+
+
+
+
+    <string name="languagecenter_test_basic">Languagecenter works!</string>
+    <string name="languagecenter_test_basic_key">languagecenter_test.basic</string>
+
+    <string name="languagecenter_test_with_format">The time is now %s</string>
+    <string name="languagecenter_test_with_format_key">languagecenter_test.with_format</string>
+    
+</resources>

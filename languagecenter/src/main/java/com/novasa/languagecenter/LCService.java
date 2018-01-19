@@ -7,7 +7,7 @@ import com.novasa.languagecenter.model.Language;
 import com.novasa.languagecenter.model.Translation;
 import com.novasa.languagecenter.retrofit.LCRestClient;
 import com.novasa.languagecenter.util.LCValues;
-import com.novasa.languagecenter.util.LocaleUtil;
+import com.novasa.languagecenter.util.LCUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public class LCService {
 
                     Language l = list.get(i);
 
-                    if (l.getCodename().equalsIgnoreCase(LocaleUtil.getPreferredLanguageCode())) {
+                    if (l.getCodename().equalsIgnoreCase(LCUtil.getPreferredLanguageCode())) {
 
                         preferredLanguage = l;
 

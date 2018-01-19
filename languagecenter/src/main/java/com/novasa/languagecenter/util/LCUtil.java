@@ -6,7 +6,7 @@ import java.util.Locale;
  * Created by admin on 29/09/16.
  */
 
-public final class LocaleUtil {
+public final class LCUtil {
 
     public static String getPreferredLanguageCode() {
         String preferredLanguageCode = "en";
@@ -19,4 +19,5 @@ public final class LocaleUtil {
         }
         return preferredLanguageCode;
     }
+
 }
