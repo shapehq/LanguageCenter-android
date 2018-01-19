@@ -12,13 +12,13 @@ Init framework with:
 
 & these string resources needed by the framework to function:
 
-    <string name="language_center_user_name">vigo</string>
-    <string name="language_center_password">5Xvz66JsKH</string>
-    <string name="language_center_base_url">https://language.novasa.com/vigo/api/v1/</string>
+    <string name="language_center_user_name">MyUserName</string>
+    <string name="language_center_password">theAwesomePassword</string>
+    <string name="language_center_base_url">https://language.novasa.com/myexampleproject/api/v1/</string>
 
 <b>OR SIMPLY USE:</b>
 
-    LanguageCenter.with(Context context, String appName, String baseUrl, String userName, String password)
+    LanguageCenter.with(Context context, String baseUrl, String userName, String password);
     
     
 
@@ -33,7 +33,7 @@ The first string is the default-text while the second string is the key used in 
 <h1>Getting the translations</h1>
 To get a translation you simply use the following code:
 
-    LanguageCenter.getInstance().getTranslation(R.string.sign_up_phone_title_key, R.string.sign_up_phone_title)
+    LanguageCenter.getInstance().getTranslation(R.string.sign_up_phone_title_key, R.string.sign_up_phone_title);
 
 Or you can use the Language Center TextView, EditText and Button.<br>
 Example:
