@@ -106,7 +106,6 @@ public class LanguageCenter {
      */
     public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password) {
         if (singleton == null) {
-            throwIfNull();
             synchronized (LanguageCenter.class) {
                 if (singleton == null) {
                     singleton = new LanguageCenter(context, baseUrl, userName, password);
@@ -141,8 +140,10 @@ public class LanguageCenter {
         try{
             formattedString = String.format(Locale.getDefault(), translation, args);
         } catch (Exception e){
-            Timber.e("Formatting error in translation to %s. Returning to original text.", LCUtil.getPreferredLanguageCode());
-            Timber.e(translation);
+            if(isDebugMode()){
+                Timber.e("Formatting error in translation to %s. Returning to original text.", LCUtil.getPreferredLanguageCode());
+                Timber.e(translation);
+            }
             formattedString = String.format(Locale.getDefault(), getTranslationDB().getStringResource(resOrg), args);
         }
         return formattedString;

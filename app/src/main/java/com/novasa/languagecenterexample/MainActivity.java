@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView = findViewById(R.id.text_with_format);
         textView.setText(LanguageCenter.getInstance().getTranslationWithStringFormat(R.string.languagecenter_test_with_format_key, R.string.languagecenter_test_with_format, System.currentTimeMillis()));
-
     }
 
 }
