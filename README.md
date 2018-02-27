@@ -4,6 +4,9 @@
 Language center is an easy method for translating static strings in our apps.<br>
 Simply add the module to your project
 
+Add Language Center to your project with Gradle:
+
+    implementation 'com.novasa.languagecenter:languagecenter:1.0.1'
 
 <h1>init</h1> 
 Init framework with:
