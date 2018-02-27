@@ -17,10 +17,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TextView textView = findViewById(R.id.text_with_format);
-        textView.setText(String.format(
-                Locale.getDefault(),
-                LanguageCenter.getInstance().getTranslation(R.string.languagecenter_test_with_format_key, R.string.languagecenter_test_with_format),
-                System.currentTimeMillis()));
+        textView.setText(LanguageCenter.getInstance().getTranslationWithStringFormat(R.string.languagecenter_test_with_format_key, R.string.languagecenter_test_with_format, System.currentTimeMillis()));
 
     }
 

@@ -43,7 +43,6 @@ public class LCTranslationsDB {
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE);
         return prefs.getLong(languageCode, 0);
-
     }
 
     /**
@@ -70,6 +69,10 @@ public class LCTranslationsDB {
      */
     public String getTranslation(@StringRes int key, @StringRes int orgText) {
         return getTranslation(context.getString(key), context.getString(orgText));
+    }
+
+    public String getStringResource(@StringRes int resourceId){
+        return context.getString(resourceId);
     }
 
     /**
@@ -118,16 +121,16 @@ public class LCTranslationsDB {
         return translation;
     }
 
-    public static long startTine;
+    public static long startTime;
 
     /**
      * persist a list of translation.
      *
      * @param translations  list of translations to persist
      */
-    void persistTranslationsList(List<Translation> translations, LanguageCenterCallback.OnDownloadTranslationsCallback callback) {
+    void persistTranslationsList(List<Translation> translations, LanguageCenterCallback callback) {
 
-        startTine = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
 
         Timber.d("LANGUAGE: PERSISTING NO. TRANSLATIONS: %d", translations.size());
 
@@ -142,7 +145,7 @@ public class LCTranslationsDB {
 
         editor.commit();
 
-        callback.onTranslationsPersisted();
+        callback.onLanguageCenterUpdated(true);
 
     }
 

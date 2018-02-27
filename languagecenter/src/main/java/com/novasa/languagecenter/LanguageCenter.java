@@ -5,6 +5,9 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 
 import com.novasa.languagecenter.interfaces.LanguageCenterCallback;
+import com.novasa.languagecenter.util.LCUtil;
+
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -38,35 +41,20 @@ public class LanguageCenter {
     private static boolean sDebugging = false;
 
     private LanguageCenter(Context context, String baseUrl, String userName, String password){
-        if (lcServiceUtil == null) {
-            lcServiceUtil = new LCService(baseUrl, userName, password);
-        }
 
-        if (lcTranslationsDB == null) {
-            lcTranslationsDB = new LCTranslationsDB(context);
-        }
+        lcServiceUtil = new LCService(baseUrl, userName, password);
+        lcTranslationsDB = new LCTranslationsDB(context);
 
         //Getting all translations already in the language center by default
-        lcServiceUtil.downloadTranslations(new LanguageCenterCallback.OnDownloadTranslationsCallback() {
+        lcServiceUtil.downloadTranslations(new LanguageCenterCallback() {
             @Override
-            public void onTranslationsPersisted() {
-                long endTime = System.currentTimeMillis();
-                Timber.d("TRANSLATIONS PERSISTED CALLLBACK SUCCCES!!! time: %d", (endTime - LCTranslationsDB.startTine));
-            }
-
-            @Override
-            public void onTranslationsPersistedError() {
-                Timber.d("TRANSLATIONS PERSISTED CALLLBACK ERROR!!!");
-            }
-
-            @Override
-            public void onTranslationsDownloaded() {
-                Timber.d("TRANSLATIONS DOWNLOADED CALLLBACK SUCCCES!!!");
-            }
-
-            @Override
-            public void onTranslationsDownloadError() {
-                Timber.d("TRANSLATIONS DOWNLOAD CALLLBACK ERROR!!!");
+            public void onLanguageCenterUpdated(boolean success) {
+                if(success){
+                    long endTime = System.currentTimeMillis();
+                    Timber.d("TRANSLATIONS UPDATED CALLLBACK SUCCCES!!! time: %d", (endTime - LCTranslationsDB.startTime));
+                } else {
+                    Timber.d("TRANSLATIONS NOT UPDATED CALLLBACK ERROR!!!");
+                }
             }
         });
     }
@@ -118,6 +106,7 @@ public class LanguageCenter {
      */
     public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password) {
         if (singleton == null) {
+            throwIfNull();
             synchronized (LanguageCenter.class) {
                 if (singleton == null) {
                     singleton = new LanguageCenter(context, baseUrl, userName, password);
@@ -128,17 +117,13 @@ public class LanguageCenter {
     }
 
     public LanguageCenter setDebugMode(final boolean debugging){
-        if (null == singleton){
-            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before setting the debugging flag.");
-        }
+        throwIfNull();
         sDebugging = debugging;
         return singleton;
     }
 
     boolean isDebugMode(){
-        if (null == singleton){
-            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before setting the debugging flag.");
-        }
+        throwIfNull();
         return sDebugging;
     }
 
@@ -150,6 +135,26 @@ public class LanguageCenter {
         return getTranslationDB().getTranslation(resTrans, resOrg);
     }
 
+    public String getTranslationWithStringFormat(int resTrans, int resOrg, Object... args){
+        String translation = getTranslationDB().getTranslation(resTrans, resOrg);
+        String formattedString;
+        try{
+            formattedString = String.format(Locale.getDefault(), translation, args);
+        } catch (Exception e){
+            Timber.e("Formatting error in translation to %s. Returning to original text.", LCUtil.getPreferredLanguageCode());
+            Timber.e(translation);
+            formattedString = String.format(Locale.getDefault(), getTranslationDB().getStringResource(resOrg), args);
+        }
+        return formattedString;
+    }
+
+    private static void throwIfNull() {
+        if (null == singleton) {
+            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before setting the debugging flag.");
+        }
+    }
+
+
     /**
      *
      * Access the LanguageCenter methods with this call after initializing the singleton instance.
@@ -157,9 +162,7 @@ public class LanguageCenter {
      * @return the language center service util
      */
     protected LCService getService(){
-        if (singleton == null){
-            throw new IllegalStateException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before using the service.");
-        }
+        throwIfNull();
         return lcServiceUtil;
     }
 
@@ -170,16 +173,12 @@ public class LanguageCenter {
      * @return the translations database util
      */
     LCTranslationsDB getTranslationDB(){
-        if (singleton == null){
-            throw new IllegalStateException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before using the service.");
-        }
+        throwIfNull();
         return lcTranslationsDB;
     }
 
     public static LanguageCenter getInstance() {
-        if (null == singleton) {
-            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with() before setting the debugging flag.");
-        }
+        throwIfNull();
         return singleton;
     }
 
