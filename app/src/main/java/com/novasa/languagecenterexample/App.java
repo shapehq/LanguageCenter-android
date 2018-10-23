@@ -3,6 +3,7 @@ package com.novasa.languagecenterexample;
 import android.app.Application;
 
 import com.novasa.languagecenter.LanguageCenter;
+import com.novasa.languagecenter.util.LCUtil;
 
 import timber.log.Timber;
 
@@ -26,6 +27,7 @@ public class App extends Application{
         // LanguageCenter init
         LanguageCenter.with(this, "https://language.novasa.com/test/api/v1/",
                 "test", "test");//.setDebugMode(true);
+        Timber.e("Language Center is initiated with " + LCUtil.getPreferredLanguageCode());
     }
 
     public static App getRunningApp() {
