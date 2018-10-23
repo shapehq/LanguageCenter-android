@@ -44,23 +44,15 @@ public class LCService {
 
                 List<Language> list = response.body();
 
-                // we check for the best language (preferred or fallback)
-                for (int i = 0; i < list.size(); i++) {
-
-                    Language l = list.get(i);
-
-                    if (l.getCodename().equalsIgnoreCase(LCUtil.getPreferredLanguageCode())) {
-
-                        preferredLanguage = l;
-
+                // we check for what language we use (preferred or fallback)
+                for(Language language : list){
+                    if (language.getCodename().equalsIgnoreCase(LCUtil.getPreferredLanguageCode())) {
+                        preferredLanguage = language;
                     }
 
-                    if (l.getIsFallback()) {
-
-                        fallbackLanguage = l;
-
+                    if (language.getIsFallback()) {
+                        fallbackLanguage = language;
                     }
-
                 }
 
                 if (preferredLanguage != null) {
@@ -70,7 +62,12 @@ public class LCService {
                 } else if (fallbackLanguage != null) {
 
                     chosenLanguage = fallbackLanguage;
+                }
 
+                for(Language l : list){
+                    if(chosenLanguage != l){
+                        LanguageCenter.getInstance().getTranslationDB().removeLanguagePersistedTime(l);
+                    }
                 }
 
                 final long persistedTimeStamp = LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(chosenLanguage.getCodename());
@@ -153,20 +150,8 @@ public class LCService {
             @Override
             public void onResponse(Call<List<Translation>> call, Response<List<Translation>> response) {
 
-                final long lastPersistTime = LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(language.getCodename());
-
                 List<Translation> list = response.body();
                 List<Translation> listOfTranslationToPersist = new ArrayList<>();
-
-//                // we add all updated or new translation to the list
-//                for (int i = 0; i < list.size(); i++) {
-//                    Translation t = list.get(i);
-//
-//                    if (t.getTimestamp() > lastPersistTime) {
-//                        listOfTranslationToPersist.add(t);
-//                    }
-//
-//                }
 
                 listOfTranslationToPersist.addAll(list);
 

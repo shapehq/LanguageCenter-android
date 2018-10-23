@@ -7,6 +7,9 @@ import android.support.annotation.NonNull;
 import com.novasa.languagecenter.interfaces.LanguageCenterCallback;
 import com.novasa.languagecenter.util.LCUtil;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import timber.log.Timber;
@@ -31,7 +34,7 @@ import timber.log.Timber;
  *     No string resources are needed when all parameters are supplied at init.
  *
  */
-public class LanguageCenter {
+public class LanguageCenter implements LanguageCenterCallback{
 
     private static LanguageCenter singleton;
 
@@ -40,23 +43,79 @@ public class LanguageCenter {
 
     private static boolean sDebugging = false;
 
+    private boolean mUpdateComplete;
+    private boolean mUpdateSuccess;
+
     private LanguageCenter(Context context, String baseUrl, String userName, String password){
 
         lcServiceUtil = new LCService(baseUrl, userName, password);
         lcTranslationsDB = new LCTranslationsDB(context);
 
         //Getting all translations already in the language center by default
-        lcServiceUtil.downloadTranslations(new LanguageCenterCallback() {
-            @Override
-            public void onLanguageCenterUpdated(boolean success) {
-                if(success){
-                    long endTime = System.currentTimeMillis();
-                    Timber.d("TRANSLATIONS UPDATED CALLLBACK SUCCCES!!! time: %d", (endTime - LCTranslationsDB.startTime));
-                } else {
-                    Timber.d("TRANSLATIONS NOT UPDATED CALLLBACK ERROR!!!");
-                }
+        lcServiceUtil.downloadTranslations(this);
+    }
+
+    private final List<WeakReference<LanguageCenterCallback>> mOneShotListeners = new ArrayList<>();
+
+    @Override
+    public void onLanguageCenterUpdated(boolean success) {
+        mUpdateComplete = true;
+        mUpdateSuccess = success;
+
+        purgeListeners();
+
+        if (sDebugging) {
+            Timber.d("Language Center updated - success: %b. Sending %d callbacks", success, mOneShotListeners.size());
+        }
+
+        for (final WeakReference<LanguageCenterCallback> listener : mOneShotListeners) {
+            final LanguageCenterCallback ref = listener.get();
+            if (ref != null) {
+                listener.get().onLanguageCenterUpdated(success);
             }
-        });
+        }
+
+        mOneShotListeners.clear();
+    }
+
+
+    public void registerUpdateListener(LanguageCenterCallback callback) {
+
+        if (mUpdateComplete) {
+            callback.onLanguageCenterUpdated(mUpdateSuccess);
+
+        } else {
+            addListener(callback);
+        }
+    }
+
+    private void addListener(LanguageCenterCallback callback) {
+        purgeListeners();
+        for (final WeakReference<LanguageCenterCallback> listener : mOneShotListeners) {
+
+            if (callback == listener.get()) {
+                // The listener is already registered. This probably means that someone made a boo boo
+                return;
+            }
+        }
+
+        mOneShotListeners.add(new WeakReference<>(callback));
+    }
+
+    private void purgeListeners() {
+
+        final List<WeakReference<LanguageCenterCallback>> dead = new ArrayList<>();
+        for (final WeakReference<LanguageCenterCallback> listener : mOneShotListeners) {
+            if (listener.get() == null) {
+                dead.add(listener);
+            }
+        }
+
+        mOneShotListeners.removeAll(dead);
+    }
+
+    public boolean didUpdate() {
+        return mUpdateComplete;
     }
 
     /**
@@ -182,5 +241,4 @@ public class LanguageCenter {
         throwIfNull();
         return singleton;
     }
-
 }

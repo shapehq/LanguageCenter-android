@@ -8,6 +8,7 @@
     android:layout_height="match_parent">
 
     <com.novasa.languagecenter.view.LanguageCenterTextView
+        android:id="@+id/text_with_in_xml"
         android:textSize="18sp"
         android:layout_marginBottom="16dp"
         android:text="@string/languagecenter_test_basic"

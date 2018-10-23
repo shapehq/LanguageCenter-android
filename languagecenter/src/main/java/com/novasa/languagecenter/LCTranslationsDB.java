@@ -46,6 +46,20 @@ public class LCTranslationsDB {
     }
 
     /**
+     * Reset the language persisted time
+     *
+     * @param languageCode the language code eg. "da", "no" etc.
+     * @return the time of last database persist time
+     */
+    void removeLanguagePersistedTime(Language language) {
+        Timber.d("LANGUAGE: PERSISTING TIMESTAMP: %d", language.getTimestamp());
+
+        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE).edit();
+        editor.putLong(language.getCodename(), 0);
+        editor.apply();
+    }
+
+    /**
      * when all translations of a language is persisted we save the time the language was last updated.
      *
      * @param language  the language we want to save the updated time of

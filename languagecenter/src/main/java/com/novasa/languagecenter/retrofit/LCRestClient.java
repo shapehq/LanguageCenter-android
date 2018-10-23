@@ -1,6 +1,5 @@
 package com.novasa.languagecenter.retrofit;
 
-
 import com.novasa.languagecenter.BuildConfig;
 
 import java.io.IOException;
@@ -34,7 +33,9 @@ public class LCRestClient {
 
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-        if (BuildConfig.DEBUG) httpClient.addInterceptor(new DebugInterceptor());
+        if (BuildConfig.DEBUG){
+            httpClient.addInterceptor(new DebugInterceptor());
+        }
 
         // add basic credentials
         httpClient.authenticator(new Authenticator() {
