@@ -6,7 +6,7 @@ Simply add the module to your project
 
 Add Language Center to your project with Gradle:
 
-    implementation 'com.novasa.languagecenter:languagecenter:1.0.1'
+    implementation 'com.novasa.languagecenter:languagecenter:1.0.2'
 
 <h1>init</h1> 
 Init framework with:
@@ -47,5 +47,7 @@ Example:
         android:text="@string/sign_up_phone_title"
         app:transKey="@string/sign_up_phone_title_key"/>
 
+<h1>Subscribe to Language Center download</h1>
+Register an update listener and implement the LanguageCenterCallback to get an update when the language has been downloaded:
 
-
+        LanguageCenter.getInstance().registerUpdateListener(this);
