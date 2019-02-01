@@ -1,191 +1,198 @@
 package com.novasa.languagecenter;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
-import com.novasa.languagecenter.interfaces.LanguageCenterCallback;
+import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
 import com.novasa.languagecenter.model.Language;
 import com.novasa.languagecenter.model.Translation;
-import com.novasa.languagecenter.retrofit.LCRestClient;
-import com.novasa.languagecenter.util.LCValues;
-import com.novasa.languagecenter.util.LCUtil;
+import com.novasa.languagecenter.service.LCRestClient;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import timber.log.Timber;
 
 
 /**
  * Created by andersp on 03/10/16.
  */
-public class LCService {
+final class LCService {
 
-    private LCRestClient client;
+    private abstract class APICallback<TData> implements Callback<TData> {
+        @Override
+        public final void onResponse(Call<TData> call, Response<TData> response) {
+            final TData result = response.body();
+            if (response.isSuccessful() && result != null) {
+                onSuccess(result);
 
-    LCService(final String url, final String username, final String password){
-        client = new LCRestClient(url, username, password);
+            } else {
+                final ResponseBody error = response.errorBody();
+
+                try {
+                    Logger.e("API error (%d): %s", response.code(), error != null ? error.string() : "null");
+
+                } catch (IOException e) {
+                    Logger.e(e);
+                }
+
+                onFailure();
+            }
+        }
+
+        @Override
+        public final void onFailure(Call<TData> call, Throwable t) {
+            Logger.e(t, "API Failure");
+            onFailure();
+        }
+
+        abstract void onSuccess(@NonNull TData data);
+        void onFailure() { }
     }
 
-    public void downloadTranslations(final LanguageCenterCallback callback){
+    private final LCRestClient mClient;
 
-        Call<List<Language>> call = client.getApiService().getLanguages(LCValues.timestamp);
+    LCService(final String url, final String username, final String password){
+        mClient = new LCRestClient(url, username, password);
+    }
 
-        call.enqueue(new Callback<List<Language>>() {
+    void setDebugMode(boolean debugMode) {
+        mClient.setDebugMode(debugMode);
+    }
+
+    void downloadTranslations(final String language, final OnLanguageCenterReadyCallback callback) {
+
+        getLanguages(new APICallback<List<Language>>() {
             @Override
-            public void onResponse(@NonNull Call<List<Language>> call, @NonNull Response<List<Language>> response) {
+            void onSuccess(@NonNull List<Language> languages) {
 
                 Language fallbackLanguage = null;
                 Language preferredLanguage = null;
-                Language chosenLanguage = null;
-
-                List<Language> list = response.body();
+                Language choseLanguage = null;
 
                 // we check for what language we use (preferred or fallback)
-                for(Language language : list){
-                    if (language.getCodename().equalsIgnoreCase(LCUtil.getPreferredLanguageCode())) {
-                        preferredLanguage = language;
+                for (final Language l : languages) {
+                    if (l.getCodename().equalsIgnoreCase(language)) {
+                        preferredLanguage = l;
                     }
 
-                    if (language.getIsFallback()) {
-                        fallbackLanguage = language;
+                    if (l.getIsFallback()) {
+                        fallbackLanguage = l;
                     }
                 }
 
                 if (preferredLanguage != null) {
-
-                    chosenLanguage = preferredLanguage;
+                    choseLanguage = preferredLanguage;
 
                 } else if (fallbackLanguage != null) {
-
-                    chosenLanguage = fallbackLanguage;
+                    choseLanguage = fallbackLanguage;
                 }
 
-                for(Language l : list){
-                    if(chosenLanguage != l){
-                        LanguageCenter.getInstance().getTranslationDB().removeLanguagePersistedTime(l);
+                // Reset any other language timestamps
+                for (final Language l : languages) {
+                    if (choseLanguage != l) {
+                        LanguageCenter.getInstance().getTranslationDB().resetLanguagePersistedTime(l);
                     }
                 }
 
-                final long persistedTimeStamp = LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(chosenLanguage.getCodename());
-                final long currentTimeStamp = chosenLanguage.getTimestamp();
+                if (choseLanguage != null) {
+                    updateLanguage(choseLanguage, callback);
 
-                // we check if we need to update the translation DB.
-                if (persistedTimeStamp < currentTimeStamp) {
-                    if (LanguageCenter.getInstance().isDebugMode()) {
-                        Timber.d("Language Center is updating language: %s (%s) (timestamp: %d < %d)", chosenLanguage.getCodename(), chosenLanguage.getName(), persistedTimeStamp, currentTimeStamp);
-                    }
-                    getTranslations(chosenLanguage, callback);
                 } else {
-                    if (LanguageCenter.getInstance().isDebugMode()) {
-                        Timber.d("Language Center language is up-to-date: %s (%s)", chosenLanguage.getCodename(), chosenLanguage.getName());
-                    }
-                    callback.onLanguageCenterUpdated(true);
+                    Logger.e("No fallback language found");
+                    callback.onLanguageCenterReady(language, false);
+
                 }
-
-            }
-
-            @Override
-            public void onFailure(Call<List<Language>> call, Throwable t) {
-
-                Timber.d("LC getLanguages FAILURE!");
-
-                callback.onLanguageCenterUpdated(false);
-
             }
         });
     }
 
-    void createTranslation(String category, final String transKey, String origText, String comment) {
+    private void getLanguages(final APICallback<List<Language>> callback) {
+        final Call<List<Language>> call = mClient.getApiService().getLanguages(LCValues.PARAM_TIMESTAMP);
+        call.enqueue(callback);
+    }
 
-        String key = transKey;
-        if (TextUtils.isEmpty(category)) {
-            String[] categorySplit = key.split("\\.");
-            category = categorySplit[0];
+    private void updateLanguage(final Language language, final OnLanguageCenterReadyCallback callback) {
+        final long persistedTimeStamp = LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(language.getCodename());
+        final long currentTimeStamp = language.getTimestamp();
 
-            key = "";
+        // we check if we need to update the translation DB.
+        if (persistedTimeStamp < currentTimeStamp) {
+            Logger.d("Language Center is updating language: %s (%s) (timestamp: %d < %d)", language.getCodename(), language.getName(), persistedTimeStamp, currentTimeStamp);
+            getTranslations(language, callback);
 
-            for (int i = 1; i < categorySplit.length; i++){
+        } else {
+            Logger.d("Language Center language is up-to-date: %s (%s)", language.getCodename(), language.getName());
+            callback.onLanguageCenterReady(language.getCodename(), true);
+        }
+    }
 
-                key = key + categorySplit[i];
+    private void getTranslations(final Language language, final OnLanguageCenterReadyCallback callback) {
 
+        final String code = language.getCodename();
+
+        final Call<List<Translation>> call = mClient.getApiService().getTranslations(LCValues.PARAM_PLATFORM, code, LCValues.PARAM_INDEXING, LCValues.PARAM_TIMESTAMP);
+        call.enqueue(new APICallback<List<Translation>>() {
+
+            @Override
+            void onSuccess(@NonNull List<Translation> translations) {
+
+                // if there are any new or updated translations we persist them and the timestamp
+                if (!translations.isEmpty()) {
+                    LanguageCenter.getInstance().getTranslationDB().persistTranslationsList(translations);
+
+                } else {
+                    Logger.d("Language Center had no translations to persist.");
+                }
+
+                callback.onLanguageCenterReady(code, true);
+
+                if (language.getTimestamp() > LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(code)){
+                    LanguageCenter.getInstance().getTranslationDB().setLanguagePersistTime(language);
+                }
             }
+
+            @Override
+            void onFailure() {
+                Logger.e("Failed to get translations for language: %s", language);
+                callback.onLanguageCenterReady(code, false);
+            }
+        });
+    }
+
+    void createTranslation(final String key, final String fallback, final String comment) {
+
+        final String category;
+        final String actualKey;
+        final String[] split = key.split("\\.", 2);
+        if (split.length >= 2) {
+            category = split[0];
+            actualKey = split[1];
+
+        } else {
+            category = "";
+            actualKey = key;
         }
 
-        Call<Translation> call = client.getApiService().createTranslation(LCValues.lc_platform, category, key, origText, comment);
-
+        final Call<Translation> call = mClient.getApiService().createTranslation(LCValues.PARAM_PLATFORM, category, actualKey, fallback, comment);
         call.enqueue(new Callback<Translation>() {
             @Override
             public void onResponse(@NonNull Call<Translation> call, @NonNull Response<Translation> response) {
 
-                Translation t = response.body();
+                final Translation t = response.body();
 
                 if (t != null) {
                     LanguageCenter.getInstance().getTranslationDB().persistTranslation(t);
-
-                    if (LanguageCenter.getInstance().isDebugMode()) {
-                        Timber.d("Language Center successfully created translation %s.", t.getKey());
-                    }
+                    Logger.d("Language Center successfully created translation %s.", t.getKey());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<Translation> call, @NonNull Throwable t) {
-
-                if (LanguageCenter.getInstance().isDebugMode()) {
-                    Timber.e(t, "Language Center failed to create translation %s.", transKey);
-                }
+                Logger.e(t, "Language Center failed to create translation %s.", key);
             }
         });
     }
-
-    private void getTranslations(final Language language, final LanguageCenterCallback callback) {
-
-        Call<List<Translation>> call = client.getApiService().getTranslations(LCValues.lc_platform, language.getCodename(), LCValues.indexing, LCValues.timestamp);
-        call.enqueue(new Callback<List<Translation>>() {
-
-            @Override
-            public void onResponse(Call<List<Translation>> call, Response<List<Translation>> response) {
-
-                List<Translation> list = response.body();
-                List<Translation> listOfTranslationToPersist = new ArrayList<>();
-
-                listOfTranslationToPersist.addAll(list);
-
-                // if there are any new or updated translations we persist them and the timestamp
-                if (listOfTranslationToPersist.size() > 0) {
-
-                    LanguageCenter.getInstance().getTranslationDB().persistTranslationsList(listOfTranslationToPersist, callback);
-
-                } else {
-                    if (LanguageCenter.getInstance().isDebugMode()) {
-                        Timber.d("Language Center had no translations to persist.");
-                    }
-                    callback.onLanguageCenterUpdated(true);
-
-                }
-
-                if (language.getTimestamp() > LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(language.getCodename())){
-
-                    LanguageCenter.getInstance().getTranslationDB().setLanguagePersistTime(language);
-
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<List<Translation>> call, Throwable t) {
-
-                Timber.d("LC getTranslations FAILURE!");
-
-                callback.onLanguageCenterUpdated(false);
-
-            }
-        });
-
-    }
-
 }

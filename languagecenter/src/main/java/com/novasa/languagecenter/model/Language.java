@@ -1,12 +1,14 @@
 package com.novasa.languagecenter.model;
 
+import android.annotation.SuppressLint;
+import android.support.annotation.NonNull;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by admin on 29/09/16.
  */
-
 public class Language {
 
     @SerializedName("name")
@@ -23,72 +25,28 @@ public class Language {
 
     @SerializedName("timestamp")
     @Expose
-    private long timestamp = 0;
+    private long timestamp;
 
-    /**
-     *
-     * @return
-     * The name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     *
-     * @param name
-     * The name
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     *
-     * @return
-     * The codename
-     */
     public String getCodename() {
         return codename;
     }
 
-    /**
-     *
-     * @param codename
-     * The codename
-     */
-    public void setCodename(String codename) {
-        this.codename = codename;
-    }
-
-    /**
-     *
-     * @return
-     * The isFallback
-     */
     public Boolean getIsFallback() {
         return isFallback;
-    }
-
-    /**
-     *
-     * @param isFallback
-     * The is_fallback
-     */
-    public void setIsFallback(Boolean isFallback) {
-        this.isFallback = isFallback;
     }
 
     public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
+    @SuppressLint("DefaultLocale")
+    @NonNull
     @Override
     public String toString() {
-        return "Language: " + this.getCodename() + " - Fallback: " + this.getIsFallback() + " : Timestamp: " + this.getTimestamp();
+        return String.format("Language: %s (%s) - Fallback: %s : Timestamp: %d", name, codename, isFallback, timestamp);
     }
 }

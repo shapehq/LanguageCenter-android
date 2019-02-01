@@ -1,4 +1,4 @@
-package com.novasa.languagecenter.retrofit;
+package com.novasa.languagecenter.service;
 
 
 import com.novasa.languagecenter.model.Language;

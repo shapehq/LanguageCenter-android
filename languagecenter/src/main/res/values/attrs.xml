@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <attr name="transKey" format="string" />
+    <attr name="transComment" format="string" />
+    <attr name="hintTransKey" format="string" />
+    <attr name="hintTransComment" format="string" />
+
     <declare-styleable name="LanguageCenterTextView">
-        <attr name="transKey"/>
-        <attr name="html" format="boolean"/>
+        <attr name="transKey" />
+        <attr name="transComment" />
+        <attr name="html" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="LanguageCenterEditText">
-        <attr name="transKey"/>
-        <attr name="hintTransKey"/>
+        <attr name="transKey" />
+        <attr name="transComment" />
+        <attr name="hintTransKey" />
+        <attr name="hintTransComment" />
     </declare-styleable>
 
     <declare-styleable name="LanguageCenterButton">
-        <attr name="transKey"/>
+        <attr name="transKey" />
+        <attr name="transComment" />
     </declare-styleable>
+
 </resources>

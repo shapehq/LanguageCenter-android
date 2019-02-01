@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 
-import com.novasa.languagecenter.LanguageCenter;
 import com.novasa.languagecenter.R;
 
 /**
@@ -13,6 +12,8 @@ import com.novasa.languagecenter.R;
  */
 
 public class LanguageCenterEditText extends AppCompatEditText {
+
+    private LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
 
     public LanguageCenterEditText(Context context) {
         super(context);
@@ -32,17 +33,55 @@ public class LanguageCenterEditText extends AppCompatEditText {
         if (attrs != null) {
             final TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.LanguageCenterEditText);
 
-            // language center
-            if (!isInEditMode() && null != LanguageCenter.getInstance()) {
-                String hintTransKey = a.getString(R.styleable.LanguageCenterEditText_hintTransKey);
-                String orgText = getHint() != null ? getHint().toString() : null;
+            final String transKey = a.getString(R.styleable.LanguageCenterEditText_transKey);
+            final String transComment = a.getString(R.styleable.LanguageCenterEditText_transComment);
+            final String hintTransKey = a.getString(R.styleable.LanguageCenterEditText_hintTransKey);
+            final String hintTransComment = a.getString(R.styleable.LanguageCenterEditText_hintTransComment);
 
-                if (!(orgText == null || orgText.isEmpty()) && !(hintTransKey == null || hintTransKey.isEmpty())) {
-                    setHint(LanguageCenter.getInstance().getTranslation(hintTransKey, orgText));
-                }
-            }
+            setTranslation(transKey, getText().toString(), transComment);
+            setHintTranslation(hintTransKey, getHint() != null ? getHint().toString() : "", hintTransComment);
 
             a.recycle();
         }
+    }
+
+    public void setTranslation(String key) {
+        mDelegate.setTranslation(key);
+    }
+
+    public void setTranslation(String key, String fallback) {
+        mDelegate.setTranslation(key, fallback);
+    }
+
+    public void setTranslation(String key, String fallback, String comment) {
+        mDelegate.setTranslation(key, fallback, comment);
+    }
+
+    public void setHintTranslation(String key) {
+        mDelegate.setHintTranslation(key);
+    }
+
+    public void setHintTranslation(String key, String fallback) {
+        mDelegate.setHintTranslation(key, fallback);
+    }
+
+    public void setHintTranslation(String key, String fallback, String comment) {
+        mDelegate.setHintTranslation(key, fallback, comment);
+    }
+
+    public void updateTranslation() {
+        mDelegate.updateTranslation();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mDelegate.onAttach();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mDelegate.onDetach();
     }
 }

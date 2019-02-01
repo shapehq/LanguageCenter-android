@@ -6,7 +6,6 @@ import android.support.v7.widget.AppCompatTextView;
 import android.text.Html;
 import android.util.AttributeSet;
 
-import com.novasa.languagecenter.LanguageCenter;
 import com.novasa.languagecenter.R;
 
 /**
@@ -14,6 +13,8 @@ import com.novasa.languagecenter.R;
  */
 
 public class LanguageCenterTextView extends AppCompatTextView {
+
+    private LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
 
     public LanguageCenterTextView(Context context) {
         super(context);
@@ -38,14 +39,40 @@ public class LanguageCenterTextView extends AppCompatTextView {
             mHtml = a.getBoolean(R.styleable.LanguageCenterTextView_html, false);
 
             // language center
-            if (!isInEditMode() && null != LanguageCenter.getInstance()) {
-                String transKey = a.getString(R.styleable.LanguageCenterTextView_transKey);
-                String orgText = getText().toString();
-                setText(LanguageCenter.getInstance().getTranslation(transKey, orgText));
-            }
+            final String transKey = a.getString(R.styleable.LanguageCenterTextView_transKey);
+            final String transComment = a.getString(R.styleable.LanguageCenterTextView_transComment);
+            setTranslation(transKey, getText().toString(), transComment);
 
             a.recycle();
         }
+    }
+
+    public void setTranslation(String key) {
+        mDelegate.setTranslation(key);
+    }
+
+    public void setTranslation(String key, String fallback) {
+        mDelegate.setTranslation(key, fallback);
+    }
+
+    public void setTranslation(String key, String fallback, String comment) {
+        mDelegate.setTranslation(key, fallback, comment);
+    }
+
+    public void updateTranslation() {
+        mDelegate.updateTranslation();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mDelegate.onAttach();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mDelegate.onDetach();
     }
 
     @Override
@@ -56,6 +83,4 @@ public class LanguageCenterTextView extends AppCompatTextView {
             super.setText(text, type);
         }
     }
-
-
 }

@@ -1,131 +1,130 @@
 package com.novasa.languagecenter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.StringRes;
+import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.novasa.languagecenter.interfaces.LanguageCenterCallback;
 import com.novasa.languagecenter.model.Language;
 import com.novasa.languagecenter.model.Translation;
 
 import java.util.List;
 
-import timber.log.Timber;
-
 import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by andersp on 28/09/16.
- *
+ * <p>
  * Sharedprefs based DB for Translations and Languages.
- *
  */
 
-public class LCTranslationsDB {
+final class LCTranslationsDB {
 
     private static final String PREFS_LANGUAGES_SPACE = "prefs_languages_space";
     private static final String PREFS_TRANSLATIONS_SPACE = "prefs_translations_space";
+    private static final String PREFS_OVERRIDDEN_LANGUAGE = "prefs_overridden_language";
 
-    private Context context;
+    private SharedPreferences mSPLanguages;
+    private SharedPreferences mSPTranslations;
 
-    LCTranslationsDB (Context c) {
-        this.context = c;
+    LCTranslationsDB(Context context) {
+        mSPLanguages = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE);
+        mSPTranslations = context.getSharedPreferences(PREFS_TRANSLATIONS_SPACE, MODE_PRIVATE);
     }
 
     /**
-     * check when the language was last persisted.
+     * Check when the language was last persisted.
      *
      * @param languageCode the language code eg. "da", "no" etc.
      * @return the time of last database persist time
      */
     long getLanguagePersistedTime(String languageCode) {
-
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE);
-        return prefs.getLong(languageCode, 0);
+        return mSPLanguages.getLong(languageCode, 0);
     }
 
     /**
      * Reset the language persisted time
      *
-     * @param languageCode the language code eg. "da", "no" etc.
-     * @return the time of last database persist time
+     * @param language the language code eg. "da", "no" etc.
      */
-    void removeLanguagePersistedTime(Language language) {
-        Timber.d("LANGUAGE: PERSISTING TIMESTAMP: %d", language.getTimestamp());
-
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE).edit();
-        editor.putLong(language.getCodename(), 0);
-        editor.apply();
+    void resetLanguagePersistedTime(Language language) {
+        Logger.d("Resetting timestamp for language: %s", language);
+        mSPLanguages.edit()
+                .putLong(language.getCodename(), 0)
+                .apply();
     }
 
     /**
-     * when all translations of a language is persisted we save the time the language was last updated.
+     * When all translations of a language are persisted we save the time the language was last updated.
      *
-     * @param language  the language we want to save the updated time of
+     * @param language the language we want to save the updated time of
      */
     void setLanguagePersistTime(Language language) {
+        Logger.d("Persisting timestamp for language: %s", language);
+        mSPLanguages.edit()
+                .putLong(language.getCodename(), language.getTimestamp())
+                .apply();
+    }
 
-        Timber.d("LANGUAGE: PERSISTING TIMESTAMP: %d", language.getTimestamp());
+    void setOverriddenLanguage(final String language) {
+        mSPLanguages.edit()
+                .putString(PREFS_OVERRIDDEN_LANGUAGE, language)
+                .apply();
+    }
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_LANGUAGES_SPACE, MODE_PRIVATE).edit();
-        editor.putLong(language.getCodename(), language.getTimestamp());
-        editor.apply();
+    boolean isLanguageOverridden() {
+        return getOverriddenLanguage() != null;
+    }
 
+    void clearOverriddenLanguage() {
+        mSPLanguages.edit()
+                .remove(PREFS_OVERRIDDEN_LANGUAGE)
+                .apply();
+    }
+
+    @Nullable
+    String getOverriddenLanguage() {
+        return mSPLanguages.getString(PREFS_OVERRIDDEN_LANGUAGE, null);
     }
 
     /**
-     * get a single translation and post a new string for creation to the language center api if missing.
+     * Get a single translation and post a new string for creation to the language center api if missing.
      *
-     * @param key       translation key for language center api
-     * @param orgText   fallback text
-     * @return          translation string or fallback text
+     * @param key      translation key for language center api
+     * @param fallback fallback text
+     * @return translation string or fallback text
      */
-    public String getTranslation(@StringRes int key, @StringRes int orgText) {
-        return getTranslation(context.getString(key), context.getString(orgText));
-    }
-
-    public String getStringResource(@StringRes int resourceId){
-        return context.getString(resourceId);
-    }
-
-    /**
-     * get a single translation and post a new string for creation to the language center api if missing.
-     *
-     * @param key       translation key for language center api
-     * @param orgText   fallback text
-     * @return          translation string or fallback text
-     */
-    public String getTranslation(String key, String orgText) {
+    String getTranslation(String key, String fallback, String comment) {
 
         String translation;
 
-        if (TextUtils.isEmpty(key)){
+        if (TextUtils.isEmpty(key)) {
 
-            translation = orgText;
+            translation = fallback;
 
             if (LanguageCenter.getInstance().isDebugMode()) {
-                // in debug mode we add the translation key missing identifier
+                // In debug mode we add the translation key missing identifier
                 translation = "(F)" + translation;
             }
 
             return translation;
         }
 
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_TRANSLATIONS_SPACE, MODE_PRIVATE);
-        translation = prefs.getString(key.toLowerCase(), "");
+        translation = mSPTranslations.getString(key.toLowerCase(), null);
 
         if (TextUtils.isEmpty(translation)) {
-            //If translation doesn't exist we show original text and create a new translation
+            // If translation doesn't exist we show fallback text and create a new translation
+            translation = fallback;
 
-            translation = orgText;
-
-            // in debug mode we add the fallback identifier
+            // In debug mode we add the fallback identifier
             if (LanguageCenter.getInstance().isDebugMode()) {
                 translation = "(F)" + translation;
             }
 
-            LanguageCenter.getInstance().getService().createTranslation("", key, orgText, "");
+            LanguageCenter.getInstance().getService().createTranslation(key, fallback, comment);
+
         } else {
             if (LanguageCenter.getInstance().isDebugMode()) {
                 translation = "(T)" + translation;
@@ -135,45 +134,41 @@ public class LCTranslationsDB {
         return translation;
     }
 
-    public static long startTime;
-
     /**
-     * persist a list of translation.
+     * Persist a list of translations.
      *
-     * @param translations  list of translations to persist
+     * @param translations list of translations to persist
      */
-    void persistTranslationsList(List<Translation> translations, LanguageCenterCallback callback) {
+    @SuppressLint("ApplySharedPref")
+    void persistTranslationsList(final List<Translation> translations) {
 
-        startTime = System.currentTimeMillis();
+        final long tRef = SystemClock.elapsedRealtime();
 
-        Timber.d("LANGUAGE: PERSISTING NO. TRANSLATIONS: %d", translations.size());
+        Logger.d("Persisting %d translations...", translations.size());
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_TRANSLATIONS_SPACE, MODE_PRIVATE).edit();
+        final SharedPreferences.Editor editor = mSPTranslations.edit();
 
-        for (int i = 0; i < translations.size(); i++) {
-
-            Translation t = translations.get(i);
+        for (int i = 0, c = translations.size(); i < c; i++) {
+            final Translation t = translations.get(i);
             editor.putString(t.getKey(), t.getValue());
-
         }
 
         editor.commit();
 
-        callback.onLanguageCenterUpdated(true);
-
+        Logger.d("Persist complete. Time spent: %d", SystemClock.elapsedRealtime() - tRef);
     }
 
     /**
-     * persist a single translation.
+     * Persist a single translation.
      *
-     * @param translation   translation to persist
+     * @param translation translation to persist
      */
-    void persistTranslation(Translation translation) {
+    void persistTranslation(final Translation translation) {
 
-        Timber.d("LANGUAGE PERSISTING NEW TRANSLATION: %s - %s", translation.getKey(), translation.getValue());
+        Logger.d("Language persisting translation: %s", translation);
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_TRANSLATIONS_SPACE, MODE_PRIVATE).edit();
-        editor.putString(translation.getKey(), translation.getValue());
-        editor.apply();
+        mSPTranslations.edit()
+                .putString(translation.getKey(), translation.getValue())
+                .apply();
     }
 }

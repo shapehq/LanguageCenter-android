@@ -3,25 +3,71 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
+    android:layout_height="match_parent"
     android:layout_margin="32dp"
-    android:layout_height="match_parent">
+    android:orientation="vertical">
 
     <com.novasa.languagecenter.view.LanguageCenterTextView
         android:id="@+id/text_with_in_xml"
-        android:textSize="18sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginBottom="16dp"
         android:text="@string/languagecenter_test_basic"
-        app:transKey="@string/languagecenter_test_basic_key"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:textSize="18sp"
+        app:transKey="@string/languagecenter_test_basic_key" />
 
     <TextView
         android:id="@+id/text_with_format"
-        android:textSize="18sp"
-        tools:text="@string/languagecenter_test_with_format"
-        android:layout_gravity="center"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="18sp"
+        tools:text="@string/languagecenter_test_with_format" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.novasa.languagecenter.view.LanguageCenterButton
+            android:id="@+id/button_english"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/languagecenter_english_fallback"
+            app:transKey="@string/languagecenter_english_key" />
+
+        <com.novasa.languagecenter.view.LanguageCenterButton
+            android:id="@+id/button_danish"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/languagecenter_danish_fallback"
+            app:transKey="@string/languagecenter_danish_key" />
+
+        <com.novasa.languagecenter.view.LanguageCenterButton
+            android:id="@+id/button_chinese"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/languagecenter_chinese_fallback"
+            app:transKey="@string/languagecenter_chinese_key" />
+
+        <com.novasa.languagecenter.view.LanguageCenterButton
+            android:id="@+id/button_device"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/languagecenter_device_fallback"
+            app:transKey="@string/languagecenter_device_key" />
+    </LinearLayout>
+
+    <com.novasa.languagecenter.view.LanguageCenterButton
+        android:id="@+id/button_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/languagecenter_second_activity_button_fallback"
+        app:transComment="@string/languagecenter_second_activity_button_comment"
+        app:transKey="@string/languagecenter_second_activity_button_key" />
 </LinearLayout>

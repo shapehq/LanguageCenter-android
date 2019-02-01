@@ -1,12 +1,14 @@
 package com.novasa.languagecenter.model;
 
+import android.annotation.SuppressLint;
+import android.support.annotation.NonNull;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by andersp on 28/09/16.
  */
-
 public class Translation {
 
     @SerializedName("key")
@@ -23,66 +25,29 @@ public class Translation {
 
     @SerializedName("timestamp")
     @Expose
-    private long timestamp = 0;
+    private long timestamp;
 
-    /**
-     * @return The key
-     */
     public String getKey() {
         return key;
     }
 
-    /**
-     * @param key The key
-     */
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    /**
-     * @return The value
-     */
     public String getValue() {
         return value;
     }
 
-    /**
-     * @param value The value
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * @return The language
-     */
     public String getLanguage() {
         return language;
     }
 
-    /**
-     * @param language The language
-     */
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    /**
-     * @return
-     */
+    @SuppressWarnings("WeakerAccess")
     public long getTimestamp() {
         return timestamp;
     }
 
-    /**
-     * @param timestamp
-     */
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
+    @NonNull
+    @SuppressLint("DefaultLocale")
     @Override
     public String toString() {
-        return "" + getKey() + " : " + getValue() + " : " + getTimestamp();
+        return String.format("%s: %s (%d)", key, value, timestamp);
     }
 }

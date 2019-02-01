@@ -2,14 +2,34 @@
     <string name="app_name">LanguageCenterExample</string>
     <string name="title_activity_main">MainActivity</string>
 
-
-
-
-
-    <string name="languagecenter_test_basic">Languagecenter works!</string>
+    <string name="languagecenter_test_basic">Languagecenter is not initialized!</string>
     <string name="languagecenter_test_basic_key">languagecenter_test.basic</string>
 
     <string name="languagecenter_test_with_format">The time is now %s</string>
     <string name="languagecenter_test_with_format_key">languagecenter_test.with_format</string>
-    
+
+    <string name="languagecenter_english_key">languagecenter_test.english</string>
+    <string name="languagecenter_english_fallback">English</string>
+
+    <string name="languagecenter_danish_key">languagecenter_test.danish</string>
+    <string name="languagecenter_danish_fallback">Danish</string>
+
+    <string name="languagecenter_chinese_key">languagecenter_test.chinese</string>
+    <string name="languagecenter_chinese_fallback">Chinese</string>
+
+    <string name="languagecenter_device_key">languagecenter_test.device</string>
+    <string name="languagecenter_device_fallback">Device</string>
+
+    <string name="languagecenter_second_activity_button_key">languagecenter_test.second_activity_button</string>
+    <string name="languagecenter_second_activity_button_comment">Text on button to open second activity</string>
+    <string name="languagecenter_second_activity_button_fallback">Next!</string>
+
+    <string name="languagecenter_additional_text_key">languagecenter_test.additional_text</string>
+    <string name="languagecenter_additional_text_comment">Text in the second example activity</string>
+    <string name="languagecenter_additional_text_fallback">Text to demonstrate how translations update across apps</string>
+
+    <string name="languagecenter_edit_text_hint_key">languagecenter_test.edit_text_hint</string>
+    <string name="languagecenter_edit_text_hint_comment">Hint comment</string>
+    <string name="languagecenter_edit_text_hint_fallback">This is a hint</string>
+
 </resources>

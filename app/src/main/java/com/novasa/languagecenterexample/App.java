@@ -1,37 +1,22 @@
 package com.novasa.languagecenterexample;
 
 import android.app.Application;
+import android.util.Log;
 
 import com.novasa.languagecenter.LanguageCenter;
-import com.novasa.languagecenter.util.LCUtil;
-
-import timber.log.Timber;
 
 /**
  * Created by martinwagner on 19/01/2018.
  */
-
-public class App extends Application{
-
-    private static App instance = null;
-
+public class App extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        }
 
         // LanguageCenter init
-        LanguageCenter.with(this, "https://language.novasa.com/test/api/v1/",
-                "test", "test");//.setDebugMode(true);
-        Timber.e("Language Center is initiated with " + LCUtil.getPreferredLanguageCode());
+        LanguageCenter.with(this, "https://language.novasa.com/test/api/v1/", "test", "test")
+                .setLogLevel(Log.VERBOSE);
+        //.setDebugMode(true);
     }
-
-    public static App getRunningApp() {
-        return instance;
-    }
-
 }

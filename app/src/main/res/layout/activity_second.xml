@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="32dp"
+    android:orientation="vertical">
+
+    <com.novasa.languagecenter.view.LanguageCenterTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:text="@string/languagecenter_additional_text_fallback"
+        android:textSize="18sp"
+        app:transComment="@string/languagecenter_additional_text_comment"
+        app:transKey="@string/languagecenter_additional_text_key" />
+
+    <com.novasa.languagecenter.view.LanguageCenterEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/languagecenter_edit_text_hint_fallback"
+        app:hintTransComment="@string/languagecenter_edit_text_hint_comment"
+        app:hintTransKey="@string/languagecenter_edit_text_hint_key" />
+</LinearLayout>

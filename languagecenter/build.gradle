@@ -25,12 +25,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 2
-        versionName "1.0.2"
+        versionName "1.1.0"
 
     }
     buildTypes {
@@ -57,13 +57,11 @@ allprojects {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
 
-    //Logging
-    implementation 'com.jakewharton.timber:timber:4.7.1'
+    // Support
+    implementation 'com.android.support:appcompat-v7:28.0.0'
 
-    // Squareup
+    // Service
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 
