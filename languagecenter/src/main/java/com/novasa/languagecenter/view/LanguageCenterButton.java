@@ -67,7 +67,7 @@ public class LanguageCenterButton extends AppCompatButton {
 
     @Override
     protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
         mDelegate.onDetach();
+        super.onDetachedFromWindow();
     }
 }

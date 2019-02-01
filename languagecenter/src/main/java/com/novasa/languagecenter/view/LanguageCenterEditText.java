@@ -81,7 +81,7 @@ public class LanguageCenterEditText extends AppCompatEditText {
 
     @Override
     protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
         mDelegate.onDetach();
+        super.onDetachedFromWindow();
     }
 }

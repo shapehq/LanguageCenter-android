@@ -45,9 +45,9 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
 
     public static final String LOG_TAG = "LanguageCenter";
 
-    private boolean mDebugging = false;
-
     private static LanguageCenter sInstance;
+
+    private boolean mDebugging = false;
 
     private Resources mResources;
     private LCService mService;
@@ -123,7 +123,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
 
                 } catch (Resources.NotFoundException e) {
                     throw new Resources.NotFoundException(
-                            "\nPlease supply all required language string resouces:\n" +
+                            "\nPlease supply all required language string resources:\n" +
                                     "<string name='language_center_app_name'>\n" +
                                     "<string name='language_center_username'>\n" +
                                     "<string name='language_center_password'>\n" +

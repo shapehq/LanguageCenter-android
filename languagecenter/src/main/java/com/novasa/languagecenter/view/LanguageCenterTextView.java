@@ -71,8 +71,8 @@ public class LanguageCenterTextView extends AppCompatTextView {
 
     @Override
     protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
         mDelegate.onDetach();
+        super.onDetachedFromWindow();
     }
 
     @Override
