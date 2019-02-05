@@ -55,7 +55,7 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
             mHintKey = key;
             mHintFallback = fallback;
             mHintComment = comment;
-            updateTranslation();
+            updateHintTranslation();
         }
     }
 
@@ -63,11 +63,13 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
         if (!mTextView.isInEditMode()) {
             final String text = LanguageCenter.getInstance().getTranslation(mKey, mFallback, mComment);
             mTextView.setText(text);
+        }
+    }
 
-            if (mTextView instanceof EditText) {
-                final String hint = LanguageCenter.getInstance().getTranslation(mHintKey, mHintFallback, mHintComment);
-                mTextView.setHint(hint);
-            }
+    void updateHintTranslation() {
+        if (mTextView instanceof EditText && !mTextView.isInEditMode()) {
+            final String hint = LanguageCenter.getInstance().getTranslation(mHintKey, mHintFallback, mHintComment);
+            mTextView.setHint(hint);
         }
     }
 
@@ -86,5 +88,6 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     @Override
     public void onLanguageCenterReady(@NonNull String language, boolean success) {
         updateTranslation();
+        updateHintTranslation();
     }
 }

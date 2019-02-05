@@ -73,6 +73,7 @@ public class LanguageCenterEditText extends AppCompatEditText {
 
     public void updateTranslation() {
         mDelegate.updateTranslation();
+        mDelegate.updateHintTranslation();
     }
 
     @Override

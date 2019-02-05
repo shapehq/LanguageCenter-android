@@ -169,9 +169,10 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
      * <p> Set language center to translate to the current device language.
      * <p> This is default behaviour.
      * <p> If the device language is not available in Language Center, the fallback language will be used.
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
-    public void setDeviceLanguage() {
-        setLanguage(getDeviceLanguage(), false, null);
+    public boolean setDeviceLanguage() {
+        return setLanguage(getDeviceLanguage(), false, null);
     }
 
     /**
@@ -179,29 +180,32 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
      * <p> This is default behaviour.
      * <p> If the device language is not available in Language Center, the fallback language will be used.
      * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
-    public void setDeviceLanguage(final OnLanguageCenterReadyCallback callback) {
-        setLanguage(getDeviceLanguage(), false, callback);
+    public boolean setDeviceLanguage(final OnLanguageCenterReadyCallback callback) {
+        return setLanguage(getDeviceLanguage(), false, callback);
     }
 
     /**
      * Set language center to manually translate to a language.
      * @param language The manual language code according to ISO 639-1, e.g. "en" for english
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
-    public void setLanguage(final String language) {
-        setLanguage(language, true, null);
+    public boolean setLanguage(final String language) {
+        return setLanguage(language, true, null);
     }
 
     /**
      * Set language center to manually translate to a language.
-     * @param language The manual language code according to ISO 639-1, e.g. "en" for english
+     * @param language The manual language code according to ISO 639-1, e.g. "en" for english.
      * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
-    public void setLanguage(final String language, @Nullable final OnLanguageCenterReadyCallback callback) {
-        setLanguage(language, true, callback);
+    public boolean setLanguage(final String language, @Nullable final OnLanguageCenterReadyCallback callback) {
+        return setLanguage(language, true, callback);
     }
 
-    private void setLanguage(final String language, final boolean override, @Nullable final OnLanguageCenterReadyCallback callback) {
+    private boolean setLanguage(final String language, final boolean override, @Nullable final OnLanguageCenterReadyCallback callback) {
         if (!TextUtils.equals(language, mLanguage)) {
             mUpdateComplete = false;
 
@@ -220,9 +224,31 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
             } else {
                 mDatabase.clearOverriddenLanguage();
             }
+
+            return true;
         }
+
+        Logger.d("Language was up to date, skipping update.");
+        return false;
     }
 
+    /**
+     * @return The current language.
+     */
+    public String getLanguage() {
+        return mLanguage;
+    }
+
+    /**
+     * @return true if the language has been manually set, false if default device language is used.
+     */
+    public boolean isDeviceLanguageOverridden() {
+        return mDatabase.isLanguageOverridden();
+    }
+
+    /**
+     * @return The current device language
+     */
     public static String getDeviceLanguage() {
         String language = "en";
         final Locale locale = Locale.getDefault();

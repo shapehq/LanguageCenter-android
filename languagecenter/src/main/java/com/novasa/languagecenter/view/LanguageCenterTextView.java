@@ -32,7 +32,7 @@ public class LanguageCenterTextView extends AppCompatTextView {
 
     private boolean mHtml;
 
-    private void init(AttributeSet attrs){
+    private void init(AttributeSet attrs) {
         if (attrs != null) {
             final TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.LanguageCenterTextView);
 

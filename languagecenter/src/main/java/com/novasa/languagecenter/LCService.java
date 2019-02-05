@@ -22,6 +22,10 @@ import retrofit2.Response;
 final class LCService {
 
     private abstract class APICallback<TData> implements Callback<TData> {
+
+        private final static int RETRIES = 5;
+        private int mRetry = 0;
+
         @Override
         public final void onResponse(Call<TData> call, Response<TData> response) {
             final TData result = response.body();
@@ -44,8 +48,20 @@ final class LCService {
 
         @Override
         public final void onFailure(Call<TData> call, Throwable t) {
-            Logger.e(t, "API Failure");
-            onFailure();
+            if (call.isCanceled()) {
+                Logger.d("API Call cancelled");
+
+            } else if (mRetry < RETRIES) {
+                mRetry++;
+                Logger.d("Call failed. Retrying... (%d)", mRetry);
+
+                final Call<TData> clone = call.clone();
+                clone.enqueue(this);
+
+            } else {
+                Logger.e(t, "API Failure");
+                onFailure();
+            }
         }
 
         abstract void onSuccess(@NonNull TData data);
@@ -62,15 +78,28 @@ final class LCService {
         mClient.setDebugMode(debugMode);
     }
 
+    private Call<?> mUpdateCall;
+
+    private void cancelUpdateCall() {
+        if (mUpdateCall != null) {
+            mUpdateCall.cancel();
+            mUpdateCall = null;
+        }
+    }
+
     void downloadTranslations(final String language, final OnLanguageCenterReadyCallback callback) {
+
+        cancelUpdateCall();
 
         getLanguages(new APICallback<List<Language>>() {
             @Override
             void onSuccess(@NonNull List<Language> languages) {
 
+                mUpdateCall = null;
+
                 Language fallbackLanguage = null;
                 Language preferredLanguage = null;
-                Language choseLanguage = null;
+                Language actualLanguage = null;
 
                 // we check for what language we use (preferred or fallback)
                 for (final Language l : languages) {
@@ -84,27 +113,32 @@ final class LCService {
                 }
 
                 if (preferredLanguage != null) {
-                    choseLanguage = preferredLanguage;
+                    actualLanguage = preferredLanguage;
 
                 } else if (fallbackLanguage != null) {
-                    choseLanguage = fallbackLanguage;
+                    actualLanguage = fallbackLanguage;
                 }
 
                 // Reset any other language timestamps
                 for (final Language l : languages) {
-                    if (choseLanguage != l) {
+                    if (actualLanguage != l) {
                         LanguageCenter.getInstance().getTranslationDB().resetLanguagePersistedTime(l);
                     }
                 }
 
-                if (choseLanguage != null) {
-                    updateLanguage(choseLanguage, callback);
+                if (actualLanguage != null) {
+                    updateLanguage(actualLanguage, callback);
 
                 } else {
                     Logger.e("No fallback language found");
                     callback.onLanguageCenterReady(language, false);
-
                 }
+            }
+
+            @Override
+            void onFailure() {
+                mUpdateCall = null;
+                callback.onLanguageCenterReady(language, false);
             }
         });
     }
@@ -112,6 +146,7 @@ final class LCService {
     private void getLanguages(final APICallback<List<Language>> callback) {
         final Call<List<Language>> call = mClient.getApiService().getLanguages(LCValues.PARAM_TIMESTAMP);
         call.enqueue(callback);
+        mUpdateCall = call;
     }
 
     private void updateLanguage(final Language language, final OnLanguageCenterReadyCallback callback) {
@@ -139,6 +174,8 @@ final class LCService {
             @Override
             void onSuccess(@NonNull List<Translation> translations) {
 
+                mUpdateCall = null;
+
                 // if there are any new or updated translations we persist them and the timestamp
                 if (!translations.isEmpty()) {
                     LanguageCenter.getInstance().getTranslationDB().persistTranslationsList(translations);
@@ -156,10 +193,14 @@ final class LCService {
 
             @Override
             void onFailure() {
+                mUpdateCall = null;
+
                 Logger.e("Failed to get translations for language: %s", language);
                 callback.onLanguageCenterReady(code, false);
             }
         });
+
+        mUpdateCall = call;
     }
 
     void createTranslation(final String key, final String fallback, final String comment) {

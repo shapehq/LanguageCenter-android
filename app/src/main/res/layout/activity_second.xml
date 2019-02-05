@@ -22,4 +22,12 @@
         android:hint="@string/languagecenter_edit_text_hint_fallback"
         app:hintTransComment="@string/languagecenter_edit_text_hint_comment"
         app:hintTransKey="@string/languagecenter_edit_text_hint_key" />
+
+    <com.novasa.languagecenter.view.LanguageCenterEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/languagecenter_edit_text2_hint_fallback"
+        android:text="@string/languagecenter_edit_text2_fallback"
+        app:hintTransKey="@string/languagecenter_edit_text2_hint_key"
+        app:transKey="@string/languagecenter_edit_text2_key" />
 </LinearLayout>

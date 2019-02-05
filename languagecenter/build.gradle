@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/Novasa/LanguageCenter-android'
     gitUrl = 'https://github.com/Novasa/LanguageCenter-android.git'
 
-    libraryVersion = '1.1.1'
+    libraryVersion = '1.1.2'
 
     developerId = 'martinwagner-novasa'
     developerName = 'Martin Wagner'
@@ -29,8 +29,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 3
-        versionName "1.1.1"
+        versionCode 4
+        versionName "1.1.2"
 
     }
     buildTypes {
