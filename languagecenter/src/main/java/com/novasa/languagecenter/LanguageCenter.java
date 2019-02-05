@@ -223,7 +223,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
         }
     }
 
-    private static String getDeviceLanguage() {
+    public static String getDeviceLanguage() {
         String language = "en";
         final Locale locale = Locale.getDefault();
         if (locale != null) {
