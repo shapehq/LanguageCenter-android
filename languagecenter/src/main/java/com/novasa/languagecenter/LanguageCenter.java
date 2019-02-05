@@ -69,7 +69,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     private void initialize(Context context) {
 
         final IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
-        BroadcastReceiver mLocaleChangeReceiver = new BroadcastReceiver() {
+        final BroadcastReceiver localeChangeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Logger.d("Locale change detected: %s", getDeviceLanguage());
@@ -82,7 +82,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
             }
         };
 
-        context.registerReceiver(mLocaleChangeReceiver, filter);
+        context.registerReceiver(localeChangeReceiver, filter);
 
         // Post this, so we have a chance to change the language first
         new Handler().post(new Runnable() {

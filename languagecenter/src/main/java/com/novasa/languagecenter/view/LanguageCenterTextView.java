@@ -41,7 +41,9 @@ public class LanguageCenterTextView extends AppCompatTextView {
             // language center
             final String transKey = a.getString(R.styleable.LanguageCenterTextView_transKey);
             final String transComment = a.getString(R.styleable.LanguageCenterTextView_transComment);
-            setTranslation(transKey, getText().toString(), transComment);
+            final String fallback = getText() != null ? getText().toString() : "";
+
+            setTranslation(transKey, fallback, transComment);
 
             a.recycle();
         }

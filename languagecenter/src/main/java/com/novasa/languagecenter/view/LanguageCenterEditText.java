@@ -38,8 +38,10 @@ public class LanguageCenterEditText extends AppCompatEditText {
             final String hintTransKey = a.getString(R.styleable.LanguageCenterEditText_hintTransKey);
             final String hintTransComment = a.getString(R.styleable.LanguageCenterEditText_hintTransComment);
 
-            setTranslation(transKey, getText().toString(), transComment);
-            setHintTranslation(hintTransKey, getHint() != null ? getHint().toString() : "", hintTransComment);
+            final String fallback = getText() != null ? getText().toString() : "";
+            final String hintFallback = getHint() != null ? getHint().toString() : "";
+            setTranslation(transKey, fallback, transComment);
+            setHintTranslation(hintTransKey, hintFallback, hintTransComment);
 
             a.recycle();
         }
