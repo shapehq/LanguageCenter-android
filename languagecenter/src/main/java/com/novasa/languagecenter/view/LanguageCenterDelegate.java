@@ -72,15 +72,19 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     }
 
     void onAttach() {
-        LanguageCenter.getInstance().registerPersistentCallback(this);
+        if (!mTextView.isInEditMode()) {
+            LanguageCenter.getInstance().registerPersistentCallback(this);
+        }
     }
 
     void onDetach() {
-        LanguageCenter.getInstance().unregisterPersistentCallback(this);
+        if (!mTextView.isInEditMode()) {
+            LanguageCenter.getInstance().unregisterPersistentCallback(this);
+        }
     }
 
     @Override
-    public void onLanguageCenterReady(String language, boolean success) {
+    public void onLanguageCenterReady(@NonNull String language, boolean success) {
         updateTranslation();
     }
 }

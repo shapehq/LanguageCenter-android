@@ -3,6 +3,7 @@ package com.novasa.languagecenterexample;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
     }
 
     @Override
-    public void onLanguageCenterReady(String language, boolean success) {
+    public void onLanguageCenterReady(@NonNull String language, boolean success) {
         // Languagecenter is updated. Show texts
 
         Log.d(LanguageCenter.LOG_TAG, String.format("Update complete. Language: %s, success: %b", language, success));

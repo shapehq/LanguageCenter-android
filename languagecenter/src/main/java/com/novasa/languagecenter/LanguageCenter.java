@@ -341,7 +341,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     private final List<WeakReference<OnLanguageCenterReadyCallback>> mPersistentCallbacks = new ArrayList<>();
 
     @Override
-    public void onLanguageCenterReady(String language, boolean success) {
+    public void onLanguageCenterReady(@NonNull String language, boolean success) {
         mUpdateComplete = true;
         mUpdateSuccess = success;
 
