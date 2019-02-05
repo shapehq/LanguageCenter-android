@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/Novasa/LanguageCenter-android'
     gitUrl = 'https://github.com/Novasa/LanguageCenter-android.git'
 
-    libraryVersion = '1.1.0'
+    libraryVersion = '1.1.1'
 
     developerId = 'martinwagner-novasa'
     developerName = 'Martin Wagner'
