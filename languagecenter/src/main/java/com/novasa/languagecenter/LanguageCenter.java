@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
 import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
+import com.novasa.languagecenter.interfaces.UpdateCallback;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -41,7 +43,14 @@ import java.util.Locale;
  *     All LanguageCenter widgets update automatically when a language update finishes.
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess", "unused"})
-public final class LanguageCenter implements OnLanguageCenterReadyCallback {
+public final class LanguageCenter implements UpdateCallback {
+
+    public enum Status {
+        INITIALIZING,
+        UPDATING,
+        READY,
+        FAILED
+    }
 
     public static final String LOG_TAG = "LanguageCenter";
 
@@ -53,16 +62,18 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     private LCService mService;
     private LCTranslationsDB mDatabase;
 
-    private boolean mUpdateComplete;
-    private boolean mUpdateSuccess;
+    private Status mStatus;
 
     private String mLanguage;
+
+    private long mTimeRef;
 
     private LanguageCenter(Context context, String baseUrl, String userName, String password) {
         mResources = context.getResources();
         mService = new LCService(baseUrl, userName, password);
         mDatabase = new LCTranslationsDB(context);
 
+        mStatus = Status.INITIALIZING;
         initialize(context);
     }
 
@@ -84,21 +95,22 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
 
         context.registerReceiver(localeChangeReceiver, filter);
 
+
+        mStatus = Status.INITIALIZING;
+
+        final String overriddenLanguage = mDatabase.getOverriddenLanguage();
+        if (!TextUtils.isEmpty(overriddenLanguage)) {
+            mLanguage = overriddenLanguage;
+        } else {
+            mLanguage = getDeviceLanguage();
+        }
+
+        // Getting all translations already in the language center by default
         // Post this, so we have a chance to change the language first
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                Logger.d("Initializing...");
-
-                //Getting all translations already in the language center by default
-                if (mLanguage == null) {
-                    final String overriddenLanguage = mDatabase.getOverriddenLanguage();
-                    if (!TextUtils.isEmpty(overriddenLanguage)) {
-                        setLanguage(overriddenLanguage);
-                    } else {
-                        setDeviceLanguage();
-                    }
-                }
+                update();
             }
         });
     }
@@ -166,70 +178,10 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     }
 
     /**
-     * <p> Set language center to translate to the current device language.
-     * <p> This is default behaviour.
-     * <p> If the device language is not available in Language Center, the fallback language will be used.
-     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
+     * @return The current status
      */
-    public boolean setDeviceLanguage() {
-        return setLanguage(getDeviceLanguage(), false, null);
-    }
-
-    /**
-     * <p> Set language center to translate to the current device language.
-     * <p> This is default behaviour.
-     * <p> If the device language is not available in Language Center, the fallback language will be used.
-     * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
-     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
-     */
-    public boolean setDeviceLanguage(final OnLanguageCenterReadyCallback callback) {
-        return setLanguage(getDeviceLanguage(), false, callback);
-    }
-
-    /**
-     * Set language center to manually translate to a language.
-     * @param language The manual language code according to ISO 639-1, e.g. "en" for english
-     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
-     */
-    public boolean setLanguage(final String language) {
-        return setLanguage(language, true, null);
-    }
-
-    /**
-     * Set language center to manually translate to a language.
-     * @param language The manual language code according to ISO 639-1, e.g. "en" for english.
-     * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
-     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
-     */
-    public boolean setLanguage(final String language, @Nullable final OnLanguageCenterReadyCallback callback) {
-        return setLanguage(language, true, callback);
-    }
-
-    private boolean setLanguage(final String language, final boolean override, @Nullable final OnLanguageCenterReadyCallback callback) {
-        if (!TextUtils.equals(language, mLanguage)) {
-            mUpdateComplete = false;
-
-            if (callback != null) {
-                registerOneShotCallback(callback);
-            }
-
-            mLanguage = language;
-
-            Logger.d("Setting language: %s. Override: %b", language, override);
-            mService.downloadTranslations(mLanguage, LanguageCenter.this);
-
-            if (override) {
-                mDatabase.setOverriddenLanguage(language);
-
-            } else {
-                mDatabase.clearOverriddenLanguage();
-            }
-
-            return true;
-        }
-
-        Logger.d("Language was up to date, skipping update.");
-        return false;
+    public Status getStatus() {
+        return mStatus;
     }
 
     /**
@@ -259,6 +211,108 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
             }
         }
         return language;
+    }
+
+
+    /**
+     * <p> Set language center to translate to the current device language.
+     * <p> This is default behaviour.
+     * <p> If the device language is not available in Language Center, the fallback language will be used.
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
+     */
+    public boolean setDeviceLanguage() {
+        return setLanguage(getDeviceLanguage(), false, null);
+    }
+
+    /**
+     * <p> Set language center to translate to the current device language.
+     * <p> This is default behaviour.
+     * <p> If the device language is not available in Language Center, the fallback language will be used.
+     * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
+     *                 NOTE: This is stored as a weak reference!
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
+     */
+    public boolean setDeviceLanguage(@Nullable final OnLanguageCenterReadyCallback callback) {
+        return setLanguage(getDeviceLanguage(), false, callback);
+    }
+
+    /**
+     * Set language center to manually translate to a language.
+     * @param language The manual language code according to ISO 639-1, e.g. "en" for english
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
+     */
+    public boolean setLanguage(@NonNull final String language) {
+        return setLanguage(language, true, null);
+    }
+
+    /**
+     * Set language center to manually translate to a language.
+     * @param language The manual language code according to ISO 639-1, e.g. "en" for english.
+     * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
+     *                 NOTE: This is stored as a weak reference!
+     * @return true if LanguageCenter will update, false if the language is already set, and no update is required
+     */
+    public boolean setLanguage(@NonNull final String language, @Nullable final OnLanguageCenterReadyCallback callback) {
+        return setLanguage(language, true, callback);
+    }
+
+    private boolean setLanguage(final String language, final boolean override, final OnLanguageCenterReadyCallback callback) {
+        if (!TextUtils.equals(language, mLanguage)) {
+
+            Logger.d("Setting language: %s. Override: %b", language, override);
+            mLanguage = language;
+
+            if (override) {
+                mDatabase.setOverriddenLanguage(language);
+
+            } else {
+                mDatabase.clearOverriddenLanguage();
+            }
+
+            update(callback);
+
+            return true;
+        }
+
+        Logger.d("Language was up to date, skipping update.");
+        return false;
+    }
+
+    public void update() {
+        update(null);
+    }
+
+    /**
+     * Update LanguageCenter with the current language
+     * @param callback A one shot callback that will be called once the update has completed.
+     *                 NOTE: This is stored as a weak reference!
+     */
+    public void update(@Nullable final OnLanguageCenterReadyCallback callback) {
+        mStatus = Status.UPDATING;
+
+        if (callback != null) {
+            registerOneShotCallback(callback);
+        }
+
+        mTimeRef = SystemClock.elapsedRealtime();
+
+        mService.downloadTranslations(mLanguage, this);
+    }
+
+    @Override
+    public void onUpdated(String language, boolean success) {
+
+        mStatus = success ? Status.READY : Status.FAILED;
+
+        purgeCallbacks();
+
+        Logger.d("Language Center updated (%s) - status: %s. Time spent: %d ms. Sending %d one shot callbacks and %d persistent callbacks.",
+                language, mStatus, SystemClock.elapsedRealtime() - mTimeRef, mOneShotCallbacks.size(), mPersistentCallbacks.size());
+
+        notify(language, mStatus, mOneShotCallbacks);
+        mOneShotCallbacks.clear();
+
+        notify(language, mStatus, mPersistentCallbacks);
     }
 
     /**
@@ -339,7 +393,7 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     }
 
     public boolean didUpdate() {
-        return mUpdateComplete;
+        return mStatus == Status.READY;
     }
 
     /**
@@ -366,29 +420,13 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
     private final List<WeakReference<OnLanguageCenterReadyCallback>> mOneShotCallbacks = new ArrayList<>();
     private final List<WeakReference<OnLanguageCenterReadyCallback>> mPersistentCallbacks = new ArrayList<>();
 
-    @Override
-    public void onLanguageCenterReady(@NonNull String language, boolean success) {
-        mUpdateComplete = true;
-        mUpdateSuccess = success;
-
-        purgeCallbacks();
-
-        Logger.d("Language Center updated (%s) - success: %b. Sending %d one shot callbacks and %d persistent callbacks.",
-                language, success, mOneShotCallbacks.size(), mPersistentCallbacks.size());
-
-        notify(language, success, mOneShotCallbacks);
-        mOneShotCallbacks.clear();
-
-        notify(language, success, mPersistentCallbacks);
-    }
-
     /**
      * Register a callback that will be fired when LanguageCenter has finished updating.
      * The callback will be cleared once the update has finished.
      */
     public void registerOneShotCallback(OnLanguageCenterReadyCallback callback) {
-        if (mUpdateComplete) {
-            callback.onLanguageCenterReady(mLanguage, mUpdateSuccess);
+        if (mStatus == Status.READY) {
+            callback.onLanguageCenterReady(this, mLanguage, mStatus);
 
         } else {
             register(callback, mOneShotCallbacks);
@@ -440,11 +478,11 @@ public final class LanguageCenter implements OnLanguageCenterReadyCallback {
         }
     }
 
-    private void notify(String language, boolean success, final List<WeakReference<OnLanguageCenterReadyCallback>> callbacks) {
+    private void notify(String language, Status status, final List<WeakReference<OnLanguageCenterReadyCallback>> callbacks) {
         for (final WeakReference<OnLanguageCenterReadyCallback> callback : callbacks) {
             final OnLanguageCenterReadyCallback ref = callback.get();
             if (ref != null) {
-                callback.get().onLanguageCenterReady(language, success);
+                callback.get().onLanguageCenterReady(this, language, status);
             }
         }
     }

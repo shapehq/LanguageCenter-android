@@ -101,8 +101,10 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     }
 
     @Override
-    public void onLanguageCenterReady(@NonNull String language, boolean success) {
-        updateTranslation();
-        updateHintTranslation();
+    public void onLanguageCenterReady(@NonNull LanguageCenter languageCenter, @NonNull String language, @NonNull LanguageCenter.Status status) {
+        if (status == LanguageCenter.Status.READY) {
+            updateTranslation();
+            updateHintTranslation();
+        }
     }
 }

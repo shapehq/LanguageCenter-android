@@ -2,7 +2,7 @@ package com.novasa.languagecenter;
 
 import android.support.annotation.NonNull;
 
-import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
+import com.novasa.languagecenter.interfaces.UpdateCallback;
 import com.novasa.languagecenter.model.Language;
 import com.novasa.languagecenter.model.Translation;
 import com.novasa.languagecenter.service.LCRestClient;
@@ -87,7 +87,7 @@ final class LCService {
         }
     }
 
-    void downloadTranslations(final String language, final OnLanguageCenterReadyCallback callback) {
+    void downloadTranslations(final String language, final UpdateCallback callback) {
 
         cancelUpdateCall();
 
@@ -131,14 +131,14 @@ final class LCService {
 
                 } else {
                     Logger.e("No fallback language found");
-                    callback.onLanguageCenterReady(language, false);
+                    callback.onUpdated(language, false);
                 }
             }
 
             @Override
             void onFailure() {
                 mUpdateCall = null;
-                callback.onLanguageCenterReady(language, false);
+                callback.onUpdated(language, false);
             }
         });
     }
@@ -149,7 +149,7 @@ final class LCService {
         mUpdateCall = call;
     }
 
-    private void updateLanguage(final Language language, final OnLanguageCenterReadyCallback callback) {
+    private void updateLanguage(final Language language, final UpdateCallback callback) {
         final long persistedTimeStamp = LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(language.getCodename());
         final long currentTimeStamp = language.getTimestamp();
 
@@ -160,11 +160,11 @@ final class LCService {
 
         } else {
             Logger.d("Language Center language is up-to-date: %s (%s)", language.getCodename(), language.getName());
-            callback.onLanguageCenterReady(language.getCodename(), true);
+            callback.onUpdated(language.getCodename(), true);
         }
     }
 
-    private void getTranslations(final Language language, final OnLanguageCenterReadyCallback callback) {
+    private void getTranslations(final Language language, final UpdateCallback callback) {
 
         final String code = language.getCodename();
 
@@ -184,7 +184,7 @@ final class LCService {
                     Logger.d("Language Center had no translations to persist.");
                 }
 
-                callback.onLanguageCenterReady(code, true);
+                callback.onUpdated(code, true);
 
                 if (language.getTimestamp() > LanguageCenter.getInstance().getTranslationDB().getLanguagePersistedTime(code)){
                     LanguageCenter.getInstance().getTranslationDB().setLanguagePersistTime(language);
@@ -196,7 +196,7 @@ final class LCService {
                 mUpdateCall = null;
 
                 Logger.e("Failed to get translations for language: %s", language);
-                callback.onLanguageCenterReady(code, false);
+                callback.onUpdated(code, false);
             }
         });
 

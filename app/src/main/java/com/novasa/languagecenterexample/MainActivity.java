@@ -67,10 +67,10 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
     }
 
     @Override
-    public void onLanguageCenterReady(@NonNull String language, boolean success) {
+    public void onLanguageCenterReady(@NonNull LanguageCenter languageCenter, @NonNull String language, @NonNull LanguageCenter.Status status) {
         // Languagecenter is updated. Show texts
 
-        Log.d(LanguageCenter.LOG_TAG, String.format("Update complete. Language: %s, success: %b", language, success));
+        Log.d("LanguageCenter Test", String.format("Update complete. Language: %s, status: %s", language, status));
 
         TextView textView = findViewById(R.id.text_with_format);
         textView.setText(LanguageCenter.getInstance().getTranslationWithStringFormat(R.string.languagecenter_test_with_format_key, R.string.languagecenter_test_with_format, DateFormat.getTimeInstance().format(new Date())));
