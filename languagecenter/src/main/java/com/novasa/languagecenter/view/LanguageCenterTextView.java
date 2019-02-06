@@ -12,9 +12,10 @@ import com.novasa.languagecenter.R;
  * Created by martinwagner on 20/12/2017.
  */
 
+@SuppressWarnings("unused")
 public class LanguageCenterTextView extends AppCompatTextView {
 
-    private LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
+    private final LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
 
     public LanguageCenterTextView(Context context) {
         super(context);
@@ -38,12 +39,10 @@ public class LanguageCenterTextView extends AppCompatTextView {
 
             mHtml = a.getBoolean(R.styleable.LanguageCenterTextView_html, false);
 
-            // language center
-            final String transKey = a.getString(R.styleable.LanguageCenterTextView_transKey);
-            final String transComment = a.getString(R.styleable.LanguageCenterTextView_transComment);
-            final String fallback = getText() != null ? getText().toString() : "";
+            final String key = a.getString(R.styleable.LanguageCenterTextView_transKey);
+            final String comment = a.getString(R.styleable.LanguageCenterTextView_transComment);
 
-            setTranslation(transKey, fallback, transComment);
+            setTranslationWithComment(key, comment);
 
             a.recycle();
         }
@@ -57,8 +56,12 @@ public class LanguageCenterTextView extends AppCompatTextView {
         mDelegate.setTranslation(key, fallback);
     }
 
-    public void setTranslation(String key, String fallback, String comment) {
-        mDelegate.setTranslation(key, fallback, comment);
+    public void setTranslationWithComment(String key, String comment) {
+        mDelegate.setTranslationWithComment(key, comment);
+    }
+
+    public void setTranslationWithComment(String key, String fallback, String comment) {
+        mDelegate.setTranslationWithComment(key, fallback, comment);
     }
 
     public void updateTranslation() {

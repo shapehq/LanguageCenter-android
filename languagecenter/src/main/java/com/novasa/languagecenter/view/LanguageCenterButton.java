@@ -11,9 +11,10 @@ import com.novasa.languagecenter.R;
  * Created by martinwagner on 05/01/2018.
  */
 
+@SuppressWarnings("unused")
 public class LanguageCenterButton extends AppCompatButton {
 
-    private LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
+    private final LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
 
     public LanguageCenterButton(Context context) {
         super(context);
@@ -35,11 +36,10 @@ public class LanguageCenterButton extends AppCompatButton {
             final TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.LanguageCenterButton);
 
             // language center
-            final String transKey = a.getString(R.styleable.LanguageCenterButton_transKey);
-            final String transComment = a.getString(R.styleable.LanguageCenterButton_transComment);
-            final String fallback = getText() != null ? getText().toString() : "";
+            final String key = a.getString(R.styleable.LanguageCenterButton_transKey);
+            final String comment = a.getString(R.styleable.LanguageCenterButton_transComment);
 
-            setTranslation(transKey, fallback, transComment);
+            setTranslationWithComment(key, comment);
 
             a.recycle();
         }
@@ -53,8 +53,12 @@ public class LanguageCenterButton extends AppCompatButton {
         mDelegate.setTranslation(key, fallback);
     }
 
-    public void setTranslation(String key, String fallback, String comment) {
-        mDelegate.setTranslation(key, fallback, comment);
+    public void setTranslationWithComment(String key, String comment) {
+        mDelegate.setTranslationWithComment(key, comment);
+    }
+
+    public void setTranslationWithComment(String key, String fallback, String comment) {
+        mDelegate.setTranslationWithComment(key, fallback, comment);
     }
 
     public void updateTranslation() {

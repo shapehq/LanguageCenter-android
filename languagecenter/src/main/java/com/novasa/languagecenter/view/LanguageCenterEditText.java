@@ -10,10 +10,10 @@ import com.novasa.languagecenter.R;
 /**
  * Created by martinwagner on 20/12/2017.
  */
-
+@SuppressWarnings("unused")
 public class LanguageCenterEditText extends AppCompatEditText {
 
-    private LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
+    private final LanguageCenterDelegate mDelegate = new LanguageCenterDelegate(this);
 
     public LanguageCenterEditText(Context context) {
         super(context);
@@ -33,15 +33,13 @@ public class LanguageCenterEditText extends AppCompatEditText {
         if (attrs != null) {
             final TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.LanguageCenterEditText);
 
-            final String transKey = a.getString(R.styleable.LanguageCenterEditText_transKey);
-            final String transComment = a.getString(R.styleable.LanguageCenterEditText_transComment);
-            final String hintTransKey = a.getString(R.styleable.LanguageCenterEditText_hintTransKey);
-            final String hintTransComment = a.getString(R.styleable.LanguageCenterEditText_hintTransComment);
+            final String key = a.getString(R.styleable.LanguageCenterEditText_transKey);
+            final String comment = a.getString(R.styleable.LanguageCenterEditText_transComment);
+            final String hintKey = a.getString(R.styleable.LanguageCenterEditText_hintTransKey);
+            final String hintComment = a.getString(R.styleable.LanguageCenterEditText_hintTransComment);
 
-            final String fallback = getText() != null ? getText().toString() : "";
-            final String hintFallback = getHint() != null ? getHint().toString() : "";
-            setTranslation(transKey, fallback, transComment);
-            setHintTranslation(hintTransKey, hintFallback, hintTransComment);
+            setTranslationWithComment(key, comment);
+            setHintTranslationWithComment(hintKey, hintComment);
 
             a.recycle();
         }
@@ -55,8 +53,12 @@ public class LanguageCenterEditText extends AppCompatEditText {
         mDelegate.setTranslation(key, fallback);
     }
 
-    public void setTranslation(String key, String fallback, String comment) {
-        mDelegate.setTranslation(key, fallback, comment);
+    public void setTranslationWithComment(String key, String comment) {
+        mDelegate.setTranslationWithComment(key, comment);
+    }
+
+    public void setTranslationWithComment(String key, String fallback, String comment) {
+        mDelegate.setTranslationWithComment(key, fallback, comment);
     }
 
     public void setHintTranslation(String key) {
@@ -67,8 +69,12 @@ public class LanguageCenterEditText extends AppCompatEditText {
         mDelegate.setHintTranslation(key, fallback);
     }
 
-    public void setHintTranslation(String key, String fallback, String comment) {
-        mDelegate.setHintTranslation(key, fallback, comment);
+    public void setHintTranslationWithComment(String key, String comment) {
+        mDelegate.setHintTranslationWithComment(key, comment);
+    }
+
+    public void setHintTranslationWithComment(String key, String fallback, String comment) {
+        mDelegate.setHintTranslationWithComment(key, fallback, comment);
     }
 
     public void updateTranslation() {

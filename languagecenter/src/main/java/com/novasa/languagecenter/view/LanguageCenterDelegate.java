@@ -22,18 +22,29 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
 
     LanguageCenterDelegate(@NonNull TextView textView) {
         mTextView = textView;
-        mFallback = textView.getText().toString();
+
+        final CharSequence text = textView.getText();
+        mFallback = text != null ? text.toString() : "";
+
+        if (textView instanceof EditText) {
+            final CharSequence hint = textView.getHint();
+            mHintFallback = hint != null ? hint.toString() : "";
+        }
     }
 
     void setTranslation(String key) {
-        setTranslation(key, mFallback, "");
+        setTranslationWithComment(key, mFallback, "");
     }
 
     void setTranslation(String key, String fallback) {
-        setTranslation(key, fallback, "");
+        setTranslationWithComment(key, fallback, "");
     }
 
-    void setTranslation(String key, String fallback, String comment) {
+    void setTranslationWithComment(String key, String comment) {
+        setTranslationWithComment(key, mFallback, comment);
+    }
+
+    void setTranslationWithComment(String key, String fallback, String comment) {
         if (!TextUtils.equals(key, mKey) || !TextUtils.equals(fallback, mFallback) || !TextUtils.equals(comment, mComment)) {
             mKey = key;
             mFallback = fallback;
@@ -43,14 +54,18 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     }
 
     void setHintTranslation(String key) {
-        setHintTranslation(key, mHintFallback, "");
+        setHintTranslationWithComment(key, mHintFallback, "");
     }
 
     void setHintTranslation(String key, String fallback) {
-        setHintTranslation(key, fallback, "");
+        setHintTranslationWithComment(key, fallback, "");
     }
 
-    void setHintTranslation(String key, String fallback, String comment) {
+    void setHintTranslationWithComment(String key, String comment) {
+        setHintTranslationWithComment(key, mHintFallback, comment);
+    }
+
+    void setHintTranslationWithComment(String key, String fallback, String comment) {
         if (!TextUtils.equals(key, mHintKey) || !TextUtils.equals(fallback, mHintFallback) || !TextUtils.equals(comment, mHintComment)) {
             mHintKey = key;
             mHintFallback = fallback;
@@ -67,7 +82,7 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     }
 
     void updateHintTranslation() {
-        if (mTextView instanceof EditText && !mTextView.isInEditMode()) {
+        if (!mTextView.isInEditMode() && mTextView instanceof EditText) {
             final String hint = LanguageCenter.getInstance().getTranslation(mHintKey, mHintFallback, mHintComment);
             mTextView.setHint(hint);
         }
