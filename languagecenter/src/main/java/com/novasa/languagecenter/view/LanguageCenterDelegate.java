@@ -75,14 +75,14 @@ class LanguageCenterDelegate implements OnLanguageCenterReadyCallback {
     }
 
     void updateTranslation() {
-        if (!mTextView.isInEditMode()) {
+        if (!mTextView.isInEditMode() && !TextUtils.isEmpty(mKey)) {
             final String text = LanguageCenter.getInstance().getTranslation(mKey, mFallback, mComment);
             mTextView.setText(text);
         }
     }
 
     void updateHintTranslation() {
-        if (!mTextView.isInEditMode() && mTextView instanceof EditText) {
+        if (!mTextView.isInEditMode() && mTextView instanceof EditText && !TextUtils.isEmpty(mHintKey)) {
             final String hint = LanguageCenter.getInstance().getTranslation(mHintKey, mHintFallback, mHintComment);
             mTextView.setHint(hint);
         }
