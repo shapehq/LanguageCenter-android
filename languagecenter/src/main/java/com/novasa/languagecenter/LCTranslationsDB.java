@@ -114,7 +114,7 @@ final class LCTranslationsDB {
 
         translation = mSPTranslations.getString(key.toLowerCase(), null);
 
-        if (TextUtils.isEmpty(translation)) {
+        if (translation == null) {
             // If translation doesn't exist we show fallback text and create a new translation
             translation = fallback;
 
