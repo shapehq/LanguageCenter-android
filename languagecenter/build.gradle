@@ -1,5 +1,8 @@
 apply plugin: 'com.android.library'
 
+def vCode = 7
+def vName = '1.1.5'
+
 ext {
     bintrayRepo = 'languagecenter'
     bintrayName = 'languagecenter'
@@ -13,7 +16,7 @@ ext {
     siteUrl = 'https://github.com/Novasa/LanguageCenter-android'
     gitUrl = 'https://github.com/Novasa/LanguageCenter-android.git'
 
-    libraryVersion = '1.1.4'
+    libraryVersion = vName
 
     developerId = 'martinwagner-novasa'
     developerName = 'Martin Wagner'
@@ -29,8 +32,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 6
-        versionName "1.1.4"
+        versionCode vCode
+        versionName vName
 
     }
     buildTypes {

@@ -52,7 +52,7 @@ public final class Logger {
     }
 
     public static void e(Throwable t) {
-        if (BuildConfig.DEBUG && sLogLevel >= Log.ERROR) {
+        if (LanguageCenter.DEBUGGABLE && sLogLevel >= Log.ERROR) {
             t.printStackTrace();
         }
     }
@@ -71,13 +71,13 @@ public final class Logger {
     }
 
     public static void log(int level, String d) {
-        if (BuildConfig.DEBUG && sLogLevel <= level) {
+        if (LanguageCenter.DEBUGGABLE && sLogLevel <= level) {
             Log.d(LanguageCenter.LOG_TAG, d);
         }
     }
 
     public static void log(int level, String d, Object... args) {
-        if (BuildConfig.DEBUG && sLogLevel <= level) {
+        if (LanguageCenter.DEBUGGABLE && sLogLevel <= level) {
             Log.d(LanguageCenter.LOG_TAG, String.format(d, args));
         }
     }

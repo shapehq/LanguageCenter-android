@@ -70,7 +70,7 @@ final class LCService {
 
     private final LCRestClient mClient;
 
-    LCService(final String url, final String username, final String password){
+    LCService(final String url, final String username, final String password) {
         mClient = new LCRestClient(url, username, password);
     }
 

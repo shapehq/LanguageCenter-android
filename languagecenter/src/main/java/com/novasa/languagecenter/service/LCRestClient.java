@@ -1,6 +1,6 @@
 package com.novasa.languagecenter.service;
 
-import com.novasa.languagecenter.BuildConfig;
+import com.novasa.languagecenter.LanguageCenter;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ public final class LCRestClient {
         final OkHttpClient.Builder http = new OkHttpClient.Builder()
                 .authenticator(new Auth(username, password));
 
-        if (BuildConfig.DEBUG) {
+        if (LanguageCenter.DEBUGGABLE) {
             http.addInterceptor(mDebugInterceptor = new DebugInterceptor());
             setDebugMode(false);
         }
@@ -45,10 +45,12 @@ public final class LCRestClient {
     }
 
     public void setDebugMode(boolean debug) {
-        mDebugInterceptor.setPrintRequestBody(debug)
-                .setPrintRequestHeaders(debug)
-                .setPrintResponseHeaders(debug)
-                .setPrintResponseBody(debug);
+        if (mDebugInterceptor != null) {
+            mDebugInterceptor.setPrintRequestBody(debug)
+                    .setPrintRequestHeaders(debug)
+                    .setPrintResponseHeaders(debug)
+                    .setPrintResponseBody(debug);
+        }
     }
 
     private static class Auth implements Authenticator {

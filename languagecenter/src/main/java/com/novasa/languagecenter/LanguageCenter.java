@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -53,6 +54,7 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     public static final String LOG_TAG = "LanguageCenter";
+    public static boolean DEBUGGABLE;
 
     private static LanguageCenter sInstance;
 
@@ -69,6 +71,7 @@ public final class LanguageCenter implements UpdateCallback {
     private long mTimeRef;
 
     private LanguageCenter(Context context, String baseUrl, String userName, String password) {
+
         mResources = context.getResources();
         mService = new LCService(baseUrl, userName, password);
         mDatabase = new LCTranslationsDB(context);
@@ -122,24 +125,27 @@ public final class LanguageCenter implements UpdateCallback {
      * @return the LanguageCenter instance
      */
     public static LanguageCenter with(@NonNull Context context) {
+        setDebuggableFlag(context);
 
-        synchronized (LanguageCenter.class) {
-            if (sInstance == null) {
-                try {
-                    final Resources res = context.getApplicationContext().getResources();
-                    final String bUrl = res.getString(res.getIdentifier("language_center_base_url", "string", context.getPackageName()));
-                    final String uName = res.getString(res.getIdentifier("language_center_username", "string", context.getPackageName()));
-                    final String pWord = res.getString(res.getIdentifier("language_center_password", "string", context.getPackageName()));
+        if (sInstance == null) {
+            synchronized (LanguageCenter.class) {
+                if (sInstance == null) {
+                    try {
+                        final Resources res = context.getApplicationContext().getResources();
+                        final String bUrl = res.getString(res.getIdentifier("language_center_base_url", "string", context.getPackageName()));
+                        final String uName = res.getString(res.getIdentifier("language_center_username", "string", context.getPackageName()));
+                        final String pWord = res.getString(res.getIdentifier("language_center_password", "string", context.getPackageName()));
 
-                    sInstance = new LanguageCenter(context, bUrl, uName, pWord);
+                        sInstance = new LanguageCenter(context, bUrl, uName, pWord);
 
-                } catch (Resources.NotFoundException e) {
-                    throw new Resources.NotFoundException(
-                            "\nPlease supply all required language string resources:\n" +
-                                    "<string name='language_center_app_name'>\n" +
-                                    "<string name='language_center_username'>\n" +
-                                    "<string name='language_center_password'>\n" +
-                                    "<string name='language_center_base_url'>");
+                    } catch (Resources.NotFoundException e) {
+                        throw new Resources.NotFoundException(
+                                "\nPlease supply all required language string resources:\n" +
+                                        "<string name='language_center_app_name'>\n" +
+                                        "<string name='language_center_username'>\n" +
+                                        "<string name='language_center_password'>\n" +
+                                        "<string name='language_center_base_url'>");
+                    }
                 }
             }
         }
@@ -157,6 +163,8 @@ public final class LanguageCenter implements UpdateCallback {
      * @return the LanguageCenter instance
      */
     public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password) {
+        setDebuggableFlag(context);
+
         if (sInstance == null) {
             synchronized (LanguageCenter.class) {
                 if (sInstance == null) {
@@ -165,6 +173,10 @@ public final class LanguageCenter implements UpdateCallback {
             }
         }
         return sInstance;
+    }
+
+    private static void setDebuggableFlag(Context context) {
+        DEBUGGABLE = 0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE);
     }
 
     /**
@@ -504,15 +516,17 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     public LanguageCenter setDebugMode(boolean debugMode) {
-        throwIfNull();
-        mDebugging = debugMode;
-        mService.setDebugMode(debugMode);
+        if (DEBUGGABLE) {
+            throwIfNull();
+            mDebugging = debugMode;
+            mService.setDebugMode(debugMode);
+        }
         return sInstance;
     }
 
     public boolean isDebugMode() {
         throwIfNull();
-        return mDebugging;
+        return DEBUGGABLE && mDebugging;
     }
 
     public LanguageCenter setLogLevel(int level) {
