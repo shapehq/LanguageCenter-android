@@ -1,6 +1,6 @@
 package com.novasa.languagecenter;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.novasa.languagecenter.interfaces.UpdateCallback;
 import com.novasa.languagecenter.model.Language;

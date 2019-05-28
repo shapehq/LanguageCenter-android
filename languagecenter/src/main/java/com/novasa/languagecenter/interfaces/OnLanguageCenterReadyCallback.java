@@ -1,6 +1,6 @@
 package com.novasa.languagecenter.interfaces;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.novasa.languagecenter.LanguageCenter;
 

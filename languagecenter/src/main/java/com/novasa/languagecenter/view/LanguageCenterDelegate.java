@@ -1,6 +1,6 @@
 package com.novasa.languagecenter.view;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;

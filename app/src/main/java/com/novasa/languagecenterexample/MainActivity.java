@@ -3,11 +3,12 @@ package com.novasa.languagecenterexample;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.novasa.languagecenter.LanguageCenter;
 import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
         findViewById(R.id.button_next).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Context context = getApplicationContext();
+                final Context context = MainActivity.this;
                 final Intent intent = new Intent(context, SecondActivity.class);
                 context.startActivity(intent);
             }
