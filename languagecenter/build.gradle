@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 def vCode = 7
-def vName = '1.1.5'
+def vName = '1.1.6'
 
 ext {
     bintrayRepo = 'languagecenter'
@@ -70,8 +70,12 @@ dependencies {
 
 }
 
-//Add these lines to publish library to bintray
-//Place it at the end of the file
-
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+if (project.rootProject.file('local.properties').exists()) {
+    // local.properties is not committed
+    // go to bintray.com -> login -> edit profile -> API key
+    // Format: (no brackets)
+    // bintray.user=[USERNAME]
+    // bintray.apikey=[API KEY]
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+}
