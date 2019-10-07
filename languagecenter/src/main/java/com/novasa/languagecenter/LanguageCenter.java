@@ -6,12 +6,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
-import android.text.TextUtils;
 
 import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
 import com.novasa.languagecenter.interfaces.UpdateCallback;
@@ -36,12 +42,12 @@ import java.util.Locale;
  * <p> No string resources are needed when all parameters are supplied at init.
  * <p> LanguageCenter will automatically detect the device language for translation as default.
  * <p> Use {@link #registerOneShotCallback(OnLanguageCenterReadyCallback)} to receive a callback once LanguageCenter has finished initializing.
- *     The callback will be automatically cleaned up once the update has finished.
+ * The callback will be automatically cleaned up once the update has finished.
  * <p> Use {@link #setLanguage(String)} or {@link #setLanguage(String, OnLanguageCenterReadyCallback)} to manually set the language
  * <p> If the language is not available in LanguageCenter, the fallback language will be used.
  * <p> Use widgets {@link com.novasa.languagecenter.view.LanguageCenterTextView}, {@link com.novasa.languagecenter.view.LanguageCenterButton}, {@link com.novasa.languagecenter.view.LanguageCenterEditText}
- *     for handy xml properties <i>transKey</i> <i>transComment</i> <i>hintTransKey</i> <i>hintTransComment</i> which can be used to set the translation keys directly in xml.
- *     All LanguageCenter widgets update automatically when a language update finishes.
+ * for handy xml properties <i>transKey</i> <i>transComment</i> <i>hintTransKey</i> <i>hintTransComment</i> which can be used to set the translation keys directly in xml.
+ * All LanguageCenter widgets update automatically when a language update finishes.
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess", "unused"})
 public final class LanguageCenter implements UpdateCallback {
@@ -76,11 +82,11 @@ public final class LanguageCenter implements UpdateCallback {
         mService = new LCService(baseUrl, userName, password);
         mDatabase = new LCTranslationsDB(context);
 
-        mStatus = Status.INITIALIZING;
         initialize(context);
     }
 
-    private void initialize(Context context) {
+    private void initialize(final Context context) {
+        mStatus = Status.INITIALIZING;
 
         final IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
         final BroadcastReceiver localeChangeReceiver = new BroadcastReceiver() {
@@ -98,9 +104,6 @@ public final class LanguageCenter implements UpdateCallback {
 
         context.registerReceiver(localeChangeReceiver, filter);
 
-
-        mStatus = Status.INITIALIZING;
-
         final String overriddenLanguage = mDatabase.getOverriddenLanguage();
         if (!TextUtils.isEmpty(overriddenLanguage)) {
             mLanguage = overriddenLanguage;
@@ -113,9 +116,59 @@ public final class LanguageCenter implements UpdateCallback {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                update();
+                updateInitial(context);
             }
         });
+    }
+
+
+    private void updateInitial(final Context context) {
+        update(new OnLanguageCenterReadyCallback() {
+            @Override
+            public void onLanguageCenterReady(@NonNull LanguageCenter languageCenter, @NonNull String language, @NonNull Status status) {
+                if (status == Status.FAILED) {
+                    Logger.d("Language Center failed to update.");
+
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !hasNetwork(context)) {
+                        awaitNetwork(context);
+                    }
+                }
+            }
+        });
+    }
+
+    private void awaitNetwork(Context context) {
+        Logger.d("Awaiting network...");
+
+        final BroadcastReceiver networkChangeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || hasNetwork(context)) {
+                    // If we're below 21 we just retry instead of making sure we have network.
+                    // If it fails again we will just be back here until it succeeds.
+                    context.unregisterReceiver(this);
+                    updateInitial(context);
+                }
+            }
+        };
+
+        context.registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private boolean hasNetwork(Context context) {
+        final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (manager != null) {
+            for (final Network network : manager.getAllNetworks()) {
+                final NetworkCapabilities capabilities = manager.getNetworkCapabilities(network);
+                if (capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    Logger.d("Network established.");
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -182,6 +235,7 @@ public final class LanguageCenter implements UpdateCallback {
     /**
      * <p> Get the LanguageCenter instance.
      * <p> This should be used anytime the instance is needed, after {@link #with(Context)} or {@link #with(Context, String, String, String)} have been called once.
+     *
      * @return the LanguageCenter instance
      */
     public static LanguageCenter getInstance() {
@@ -230,6 +284,7 @@ public final class LanguageCenter implements UpdateCallback {
      * <p> Set language center to translate to the current device language.
      * <p> This is default behaviour.
      * <p> If the device language is not available in Language Center, the fallback language will be used.
+     *
      * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
     public boolean setDeviceLanguage() {
@@ -240,6 +295,7 @@ public final class LanguageCenter implements UpdateCallback {
      * <p> Set language center to translate to the current device language.
      * <p> This is default behaviour.
      * <p> If the device language is not available in Language Center, the fallback language will be used.
+     *
      * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
      *                 NOTE: This is stored as a weak reference!
      * @return true if LanguageCenter will update, false if the language is already set, and no update is required
@@ -250,6 +306,7 @@ public final class LanguageCenter implements UpdateCallback {
 
     /**
      * Set language center to manually translate to a language.
+     *
      * @param language The manual language code according to ISO 639-1, e.g. "en" for english
      * @return true if LanguageCenter will update, false if the language is already set, and no update is required
      */
@@ -259,6 +316,7 @@ public final class LanguageCenter implements UpdateCallback {
 
     /**
      * Set language center to manually translate to a language.
+     *
      * @param language The manual language code according to ISO 639-1, e.g. "en" for english.
      * @param callback A one shot callback that will be executed once the update has finished, and subsequently cleaned up.
      *                 NOTE: This is stored as a weak reference!
@@ -296,6 +354,7 @@ public final class LanguageCenter implements UpdateCallback {
 
     /**
      * Update LanguageCenter with the current language
+     *
      * @param callback A one shot callback that will be called once the update has completed.
      *                 NOTE: This is stored as a weak reference!
      */
