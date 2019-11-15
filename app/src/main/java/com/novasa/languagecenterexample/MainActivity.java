@@ -23,6 +23,13 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.button_init).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LanguageCenter.getInstance().initialize(MainActivity.this, "en");
+            }
+        });
+
         findViewById(R.id.button_english).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
             }
         });
 
-        LanguageCenter.getInstance().initialize(this);
         LanguageCenter.getInstance().registerOneShotCallback(this);
     }
 

@@ -96,7 +96,15 @@ public final class LanguageCenter implements UpdateCallback {
         mLanguage = !TextUtils.isEmpty(overriddenLanguage) ? overriddenLanguage : getDeviceLanguage();
     }
 
-    public void initialize(final Context context) {
+    public void initialize(@NonNull final Context context, @NonNull String language) {
+        if (!language.equals(mLanguage)) {
+            mLanguage = language;
+            mDatabase.setOverriddenLanguage(language);
+        }
+        initialize(context);
+    }
+
+    public void initialize(@NonNull final Context context) {
         if (mStatus != Status.NOT_INITIALIZED) {
             Logger.e("Language Center was already initialized!");
             return;
@@ -129,7 +137,6 @@ public final class LanguageCenter implements UpdateCallback {
             }
         });
     }
-
 
     private void updateInitial(final Context context) {
         update(new OnLanguageCenterReadyCallback() {

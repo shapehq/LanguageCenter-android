@@ -24,6 +24,9 @@
     <string name="languagecenter_second_activity_button_comment">Text on button to open second activity</string>
     <string name="languagecenter_second_activity_button_fallback">Next!</string>
 
+    <string name="languagecenter_init_button_key">languagecenter_test.init</string>
+    <string name="languagecenter_init_button_fallback">Initialize</string>
+
     <string name="languagecenter_additional_text_key">languagecenter_test.additional_text</string>
     <string name="languagecenter_additional_text_comment">Text in the second example activity</string>
     <string name="languagecenter_additional_text_fallback">Text to demonstrate how translations update across apps</string>
