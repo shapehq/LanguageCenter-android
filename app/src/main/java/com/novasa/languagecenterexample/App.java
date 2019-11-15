@@ -15,7 +15,7 @@ public class App extends Application {
         super.onCreate();
 
         // LanguageCenter init
-        LanguageCenter.with(this, "https://language.novasa.com/test/api/v1/", "test", "test")
+        LanguageCenter.with(this, "https://language.novasa.com/test/api/v1/", "test", "test", false)
                 .setLogLevel(Log.VERBOSE);
         //.setDebugMode(true);
     }

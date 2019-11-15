@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
             }
         });
 
+        LanguageCenter.getInstance().initialize(this);
         LanguageCenter.getInstance().registerOneShotCallback(this);
     }
 
