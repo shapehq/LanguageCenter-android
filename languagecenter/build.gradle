@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
-def vCode = 8
-def vName = '1.1.7'
+def vCode = 9
+def vName = '1.1.8'
 
 ext {
     bintrayRepo = 'languagecenter'
@@ -28,10 +28,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode vCode
         versionName vName
 

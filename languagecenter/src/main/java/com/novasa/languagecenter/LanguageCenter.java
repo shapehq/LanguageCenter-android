@@ -44,7 +44,7 @@ import java.util.Locale;
  *
  * <p>Auto initialization can be deactivated by passing false as the last parameter of {@link #with(Context, boolean)} or {@link #with(Context, String, String, String, boolean)}.
  * {@link #initialize(Context)} must be called manually after. Use this for example if the app needs to receive a remote language setting before initializing. Default behaviour is to automatically initialize.
- * 
+ *
  * <p> LanguageCenter will automatically detect the device language for translation as default.
  *
  * <p> Use {@link #registerOneShotCallback(OnLanguageCenterReadyCallback)} to receive a callback once LanguageCenter has finished initializing.
