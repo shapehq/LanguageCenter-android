@@ -31,22 +31,30 @@ import java.util.Locale;
  * Created by andersp on 04/10/16.
  * <p> Init framework with:
  * <p> {@link #with(Context)}
- * <p> These string resources needed by the framework to function:
+ * <p> These string resources are needed by the framework to function:
  * <ul>
  * <li>language_center_user_name
  * <li>language_center_password
  * <li>language_center_base_url
  * </ul>
+ *
  * <p> Or:
  * <p> {@link #with(Context, String, String, String)}
  * <p> No string resources are needed when all parameters are supplied at init.
+ *
+ * <p>Auto initialization can be deactivated by passing false as the last parameter of {@link #with(Context, boolean)} or {@link #with(Context, String, String, String, boolean)}.
+ * {@link #initialize(Context)} must be called manually after. Use this for example if the app needs to receive a remote language setting before initializing. Default behaviour is to automatically initialize.
+ * 
  * <p> LanguageCenter will automatically detect the device language for translation as default.
+ *
  * <p> Use {@link #registerOneShotCallback(OnLanguageCenterReadyCallback)} to receive a callback once LanguageCenter has finished initializing.
  * The callback will be automatically cleaned up once the update has finished.
+ *
  * <p> Use {@link #setLanguage(String)} or {@link #setLanguage(String, OnLanguageCenterReadyCallback)} to manually set the language
  * <p> If the language is not available in LanguageCenter, the fallback language will be used.
+ *
  * <p> Use widgets {@link com.novasa.languagecenter.view.LanguageCenterTextView}, {@link com.novasa.languagecenter.view.LanguageCenterButton}, {@link com.novasa.languagecenter.view.LanguageCenterEditText}
- * for handy xml properties <i>transKey</i> <i>transComment</i> <i>hintTransKey</i> <i>hintTransComment</i> which can be used to set the translation keys directly in xml.
+ * for handy xml properties <i>transKey</i> <i>transComment</i> <i>hintTransKey</i> <i>hintTransComment</i>, which can be used to set the translation keys directly in xml.
  * All LanguageCenter widgets update automatically when a language update finishes.
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess", "unused"})
