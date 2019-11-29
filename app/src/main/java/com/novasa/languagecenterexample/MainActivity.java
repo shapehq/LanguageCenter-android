@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements OnLanguageCenterR
         findViewById(R.id.button_init).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LanguageCenter.getInstance().initialize(MainActivity.this, "en");
+                LanguageCenter.getInstance().initialize(getApplicationContext(), "en");
             }
         });
 
