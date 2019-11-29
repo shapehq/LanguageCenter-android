@@ -1,5 +1,6 @@
 package com.novasa.languagecenter;
 
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -73,6 +74,107 @@ public final class LanguageCenter implements UpdateCallback {
 
     private static LanguageCenter sInstance;
 
+
+    public static LanguageCenter with(@NonNull Context context) {
+        return with(context, true);
+    }
+
+    /**
+     * Initialize LanguageCenter with this method.
+     *
+     * @param context application context for initialization
+     * @param autoInit if LanguageCenter should update automatically. If this is false, {@link LanguageCenter#initialize(Context)} must be called manually.
+     * @return the LanguageCenter instance
+     */
+    public static LanguageCenter with(@NonNull Context context, boolean autoInit) {
+        try {
+            final Resources res = context.getApplicationContext().getResources();
+            final String bUrl = res.getString(res.getIdentifier("language_center_base_url", "string", context.getPackageName()));
+            final String uName = res.getString(res.getIdentifier("language_center_username", "string", context.getPackageName()));
+            final String pWord = res.getString(res.getIdentifier("language_center_password", "string", context.getPackageName()));
+
+            return with(context, bUrl, uName, pWord, autoInit);
+
+        } catch (Resources.NotFoundException e) {
+            throw new Resources.NotFoundException(
+                    "\nPlease supply all required language string resources:\n" +
+                            "<string name='language_center_app_name'>\n" +
+                            "<string name='language_center_username'>\n" +
+                            "<string name='language_center_password'>\n" +
+                            "<string name='language_center_base_url'>");
+        }
+    }
+
+    public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password) {
+        return with(context, baseUrl, userName, password, true);
+    }
+
+    /**
+     * Initialize LanguageCenter with this method.
+     *
+     * @param context  application context for initialization
+     * @param baseUrl  the base url for the LanguageCenter server
+     * @param userName user name for LC server auth
+     * @param password password for LC server auth
+     * @param autoInit if LanguageCenter should update automatically. If this is false, {@link LanguageCenter#initialize(Context)} must be called manually.
+     * @return the LanguageCenter instance
+     */
+    public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password, boolean autoInit) {
+        DEBUGGABLE = 0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE);
+
+        throwIfNotApplicationContext(context);
+
+        if (sInstance == null) {
+            synchronized (LanguageCenter.class) {
+                if (sInstance == null) {
+                    sInstance = new LanguageCenter(context, baseUrl, userName, password);
+                    if (autoInit) {
+                        sInstance.initialize(context);
+                    }
+                }
+            }
+        }
+        return sInstance;
+    }
+
+    /**
+     * <p> Get the LanguageCenter instance.
+     * <p> This should be used anytime the instance is needed, after {@link #with(Context)} or {@link #with(Context, String, String, String)} have been called once.
+     *
+     * @return the LanguageCenter instance
+     */
+    public static LanguageCenter getInstance() {
+        throwIfNull();
+        return sInstance;
+    }
+
+    /**
+     * @return The current device language
+     */
+    public static String getDeviceLanguage() {
+        String language = "en";
+        final Locale locale = Locale.getDefault();
+        if (locale != null) {
+            String languageCode = locale.getLanguage();
+            if (!TextUtils.isEmpty(languageCode)) {
+                language = languageCode.toLowerCase();
+            }
+        }
+        return language;
+    }
+
+    private static void throwIfNull() {
+        if (null == sInstance) {
+            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with().");
+        }
+    }
+
+    private static void throwIfNotApplicationContext(Context context) {
+        if (!(context instanceof Application)) {
+            throw new IllegalArgumentException("Please supply LanguageCenter with an instance of Application Context");
+        }
+    }
+
     private boolean mDebugging = false;
 
     private Resources mResources;
@@ -96,6 +198,11 @@ public final class LanguageCenter implements UpdateCallback {
         mLanguage = !TextUtils.isEmpty(overriddenLanguage) ? overriddenLanguage : getDeviceLanguage();
     }
 
+    /**
+     * Initialize LanguageCenter. This should only be called if {@link #with} was called without auto init.
+     * @param context Must be Application context, since LanguageCenter registers a receiver to listen for device language changes.
+     * @param language Initialize LanguageCenter with a specific language, overriding the device language setting.
+     */
     public void initialize(@NonNull final Context context, @NonNull String language) {
         if (!language.equals(mLanguage)) {
             mLanguage = language;
@@ -104,11 +211,17 @@ public final class LanguageCenter implements UpdateCallback {
         initialize(context);
     }
 
+    /**
+     * Initialize LanguageCenter. This should only be called if {@link #with} was called without auto init.
+     * @param context Must be Application context, since LanguageCenter registers a receiver to listen for device language setting changes.
+     */
     public void initialize(@NonNull final Context context) {
         if (mStatus != Status.NOT_INITIALIZED) {
             Logger.e("Language Center was already initialized!");
             return;
         }
+
+        throwIfNotApplicationContext(context);
 
         mStatus = Status.INITIALIZING;
 
@@ -187,80 +300,6 @@ public final class LanguageCenter implements UpdateCallback {
         return false;
     }
 
-    public static LanguageCenter with(@NonNull Context context) {
-        return with(context, true);
-    }
-
-    /**
-     * Initialize LanguageCenter with this method.
-     *
-     * @param context application context for initialization
-     * @return the LanguageCenter instance
-     */
-    public static LanguageCenter with(@NonNull Context context, boolean autoInit) {
-        try {
-            final Resources res = context.getApplicationContext().getResources();
-            final String bUrl = res.getString(res.getIdentifier("language_center_base_url", "string", context.getPackageName()));
-            final String uName = res.getString(res.getIdentifier("language_center_username", "string", context.getPackageName()));
-            final String pWord = res.getString(res.getIdentifier("language_center_password", "string", context.getPackageName()));
-
-            return with(context, bUrl, uName, pWord, autoInit);
-
-        } catch (Resources.NotFoundException e) {
-            throw new Resources.NotFoundException(
-                    "\nPlease supply all required language string resources:\n" +
-                            "<string name='language_center_app_name'>\n" +
-                            "<string name='language_center_username'>\n" +
-                            "<string name='language_center_password'>\n" +
-                            "<string name='language_center_base_url'>");
-        }
-    }
-
-    public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password) {
-        return with(context, baseUrl, userName, password, true);
-    }
-
-    /**
-     * Initialize LanguageCenter with this method.
-     *
-     * @param context  application context for initialization
-     * @param baseUrl  the base url for the LanguageCenter server
-     * @param userName user name for LC server auth
-     * @param password password for LC server auth
-     * @param autoInit if LanguageCenter should update automatically. If this is false, {@link LanguageCenter#initialize(Context)} must be called manually.
-     * @return the LanguageCenter instance
-     */
-    public static LanguageCenter with(@NonNull Context context, @NonNull String baseUrl, @NonNull String userName, @NonNull String password, boolean autoInit) {
-        setDebuggableFlag(context);
-
-        if (sInstance == null) {
-            synchronized (LanguageCenter.class) {
-                if (sInstance == null) {
-                    sInstance = new LanguageCenter(context, baseUrl, userName, password);
-                    if (autoInit) {
-                        sInstance.initialize(context);
-                    }
-                }
-            }
-        }
-        return sInstance;
-    }
-
-    private static void setDebuggableFlag(Context context) {
-        DEBUGGABLE = 0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE);
-    }
-
-    /**
-     * <p> Get the LanguageCenter instance.
-     * <p> This should be used anytime the instance is needed, after {@link #with(Context)} or {@link #with(Context, String, String, String)} have been called once.
-     *
-     * @return the LanguageCenter instance
-     */
-    public static LanguageCenter getInstance() {
-        throwIfNull();
-        return sInstance;
-    }
-
     /**
      * @return The current status
      */
@@ -281,22 +320,6 @@ public final class LanguageCenter implements UpdateCallback {
     public boolean isDeviceLanguageOverridden() {
         return mDatabase.isLanguageOverridden();
     }
-
-    /**
-     * @return The current device language
-     */
-    public static String getDeviceLanguage() {
-        String language = "en";
-        final Locale locale = Locale.getDefault();
-        if (locale != null) {
-            String languageCode = locale.getLanguage();
-            if (!TextUtils.isEmpty(languageCode)) {
-                language = languageCode.toLowerCase();
-            }
-        }
-        return language;
-    }
-
 
     /**
      * <p> Set language center to translate to the current device language.
@@ -613,11 +636,5 @@ public final class LanguageCenter implements UpdateCallback {
     public LanguageCenter setLogLevel(int level) {
         Logger.setLogLevel(level);
         return this;
-    }
-
-    private static void throwIfNull() {
-        if (null == sInstance) {
-            throw new IllegalArgumentException("LanguageCenter hasn't been initialized yet. Please call LanguageCenter.with().");
-        }
     }
 }
