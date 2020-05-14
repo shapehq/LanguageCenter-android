@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
-def vCode = 11
-def vName = '1.1.10'
+def vCode = 12
+def vName = '1.1.11'
 
 ext {
     bintrayRepo = 'languagecenter'
