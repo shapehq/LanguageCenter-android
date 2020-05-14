@@ -15,11 +15,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.annotation.StringRes;
-
 import com.novasa.languagecenter.interfaces.OnLanguageCenterReadyCallback;
 import com.novasa.languagecenter.interfaces.UpdateCallback;
 
@@ -27,6 +22,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.StringRes;
 
 /**
  * Created by andersp on 04/10/16.
@@ -137,6 +137,11 @@ public final class LanguageCenter implements UpdateCallback {
         return sInstance;
     }
 
+    public static LanguageCenter noop(@NonNull Context context) {
+        sInstance = new LanguageCenter(context);
+        return sInstance;
+    }
+
     /**
      * <p> Get the LanguageCenter instance.
      * <p> This should be used anytime the instance is needed, after {@link #with(Context)} or {@link #with(Context, String, String, String)} have been called once.
@@ -153,12 +158,10 @@ public final class LanguageCenter implements UpdateCallback {
      */
     public static String getDeviceLanguage() {
         String language = "en";
-        final Locale locale = Locale.getDefault();
-        if (locale != null) {
-            String languageCode = locale.getLanguage();
-            if (!TextUtils.isEmpty(languageCode)) {
-                language = languageCode.toLowerCase();
-            }
+
+        final String languageCode = Locale.getDefault().getLanguage();
+        if (!TextUtils.isEmpty(languageCode)) {
+            language = languageCode.toLowerCase();
         }
         return language;
     }
@@ -176,6 +179,7 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     private boolean mDebugging = false;
+    private boolean mNoop = false;
 
     private Resources mResources;
     private LCService mService;
@@ -196,6 +200,16 @@ public final class LanguageCenter implements UpdateCallback {
 
         final String overriddenLanguage = mDatabase.getOverriddenLanguage();
         mLanguage = !TextUtils.isEmpty(overriddenLanguage) ? overriddenLanguage : getDeviceLanguage();
+    }
+
+    /**
+     * No-op constructor
+     */
+    private LanguageCenter(Context context) {
+        mNoop = true;
+        mStatus = Status.READY;
+        mResources = context.getResources();
+        mLanguage = getDeviceLanguage();
     }
 
     /**
@@ -318,6 +332,9 @@ public final class LanguageCenter implements UpdateCallback {
      * @return true if the language has been manually set, false if default device language is used.
      */
     public boolean isDeviceLanguageOverridden() {
+        if (mNoop) {
+            return false;
+        }
         return mDatabase.isLanguageOverridden();
     }
 
@@ -368,6 +385,10 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     private boolean setLanguage(final String language, final boolean override, final OnLanguageCenterReadyCallback callback) {
+        if (mNoop) {
+            return false;
+        }
+
         if (mStatus == Status.NOT_INITIALIZED) {
             throw new IllegalStateException("LanguageCenter has not been initialized. Please call initialize() before changing the language");
         }
@@ -404,6 +425,13 @@ public final class LanguageCenter implements UpdateCallback {
      *                 NOTE: This is stored as a weak reference!
      */
     public void update(@Nullable final OnLanguageCenterReadyCallback callback) {
+        if (mNoop) {
+            if (callback != null) {
+                callback.onLanguageCenterReady(this, mLanguage, mStatus);
+            }
+            return;
+        }
+
         mStatus = Status.UPDATING;
 
         if (callback != null) {
@@ -417,6 +445,9 @@ public final class LanguageCenter implements UpdateCallback {
 
     @Override
     public void onUpdated(String language, boolean success) {
+        if (mNoop) {
+            return;
+        }
 
         mStatus = success ? Status.READY : Status.FAILED;
 
@@ -474,6 +505,9 @@ public final class LanguageCenter implements UpdateCallback {
      * @return The translated string
      */
     public String getTranslation(final String key, final String fallback, final String comment) {
+        if (mNoop) {
+            return fallback;
+        }
         return getTranslationDB().getTranslation(key, fallback, comment);
     }
 
@@ -496,6 +530,10 @@ public final class LanguageCenter implements UpdateCallback {
      * @return The translated string
      */
     public String getTranslationWithStringFormat(final String key, final String fallback, final Object... args) {
+        if (mNoop) {
+            return String.format(new Locale(mLanguage), fallback, args);
+        }
+
         final String translation = getTranslationDB().getTranslation(key, fallback, "");
         try {
             return String.format(new Locale(mLanguage), translation, args);
@@ -620,6 +658,10 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     public LanguageCenter setDebugMode(boolean debugMode) {
+        if (mNoop) {
+            return this;
+        }
+
         if (DEBUGGABLE) {
             throwIfNull();
             mDebugging = debugMode;
@@ -629,6 +671,10 @@ public final class LanguageCenter implements UpdateCallback {
     }
 
     public boolean isDebugMode() {
+        if (mNoop) {
+            return false;
+        }
+
         throwIfNull();
         return DEBUGGABLE && mDebugging;
     }
