@@ -62,7 +62,7 @@ allprojects {
 dependencies {
 
     // Support
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
 
     // Service
     implementation 'com.squareup.retrofit2:retrofit:2.6.0'
@@ -73,6 +73,7 @@ dependencies {
 if (project.rootProject.file('local.properties').exists()) {
     // local.properties is not committed
     // go to bintray.com -> login -> edit profile -> API key
+    // Bintray account required belongs to Martin Wagner (martin@novasa.com)
     // Format: (no brackets)
     // bintray.user=[USERNAME]
     // bintray.apikey=[API KEY]
